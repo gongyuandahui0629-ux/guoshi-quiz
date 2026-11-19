@@ -1,0 +1,2340 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<title>RAD-CYBER 国試早押しバトル | 診療放射線技師国家試験</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@600;700&family=M+PLUS+Rounded+1c:wght@500;700;800;900&family=Noto+Sans+JP:wght@500;700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+  :root {
+    --bg-base: #060812;
+    --bg-card: rgba(13, 20, 36, 0.88);
+    --bg-card-hover: rgba(19, 29, 52, 0.95);
+    --border-neon: rgba(0, 240, 255, 0.35);
+    --border-glow: 0 0 15px rgba(0, 240, 255, 0.25);
+    
+    --neon-cyan: #00f0ff;
+    --neon-cyan-glow: 0 0 12px rgba(0, 240, 255, 0.7);
+    --neon-pink: #ff0055;
+    --neon-pink-glow: 0 0 12px rgba(255, 0, 85, 0.7);
+    --neon-lime: #00ff66;
+    --neon-lime-glow: 0 0 12px rgba(0, 255, 102, 0.7);
+    --neon-yellow: #ffe600;
+    --neon-yellow-glow: 0 0 12px rgba(255, 230, 0, 0.7);
+    --neon-purple: #b537f2;
+    --neon-purple-glow: 0 0 12px rgba(181, 55, 242, 0.7);
+
+    --p1: #00f0ff;
+    --p2: #ff0055;
+    --p3: #00ff66;
+    --p4: #ffe600;
+
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-dim: #64748b;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "M PLUS Rounded 1c", "Noto Sans JP", sans-serif;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    min-height: 100dvh;
+    background-image: 
+      radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.12), transparent 45%),
+      radial-gradient(circle at 85% 60%, rgba(255, 0, 85, 0.08), transparent 35%),
+      linear-gradient(rgba(0, 240, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+    background-attachment: fixed;
+    overflow-x: hidden;
+  }
+
+  .wrap { max-width: 620px; margin: 0 auto; padding: 12px 14px 40px; position: relative; }
+  button { font-family: inherit; cursor: pointer; border: none; outline: none; }
+  .hidden { display: none !important; }
+
+  /* Cyber HUD Topbar */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 10px 14px; background: rgba(10, 15, 28, 0.85);
+    border: 1px solid var(--border-neon); border-radius: 999px;
+    backdrop-filter: blur(10px); box-shadow: var(--border-glow);
+    margin-bottom: 16px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 13.5px;
+    letter-spacing: .08em; color: #fff;
+  }
+  .logo .tag { color: var(--neon-cyan); text-shadow: var(--neon-cyan-glow); }
+  .logo .sub { color: var(--neon-pink); text-shadow: var(--neon-pink-glow); }
+  
+  .top-actions { display: flex; gap: 6px; align-items: center; }
+  .hud-btn {
+    background: rgba(15, 23, 42, 0.9); border: 1.5px solid var(--border-neon);
+    color: var(--text-primary); border-radius: 999px; padding: 6px 11px;
+    font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;
+    transition: all .15s ease;
+  }
+  .hud-btn:hover { border-color: var(--neon-cyan); box-shadow: var(--neon-cyan-glow); }
+  .hud-btn:active { transform: scale(0.96); }
+  .hud-btn.active { background: rgba(0, 240, 255, 0.15); border-color: var(--neon-cyan); color: var(--neon-cyan); }
+  .hud-btn.badge-btn { position: relative; }
+  .hud-badge {
+    background: var(--neon-pink); color: #fff; font-size: 10px; font-weight: 900;
+    padding: 1px 6px; border-radius: 999px; text-shadow: none;
+  }
+
+  /* Cyber Cards */
+  .cyber-card {
+    background: var(--bg-card); border: 1.5px solid var(--border-neon);
+    border-radius: 20px; padding: 18px; backdrop-filter: blur(14px);
+    box-shadow: 0 0 25px rgba(0, 240, 255, 0.1), inset 0 0 15px rgba(0, 240, 255, 0.03);
+    position: relative; overflow: hidden;
+  }
+  .cyber-card::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+  }
+
+  /* Title Screen */
+  .hero { text-align: center; padding: 8px 4px 14px; }
+  .hero .cyber-badge {
+    display: inline-block; font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 800;
+    letter-spacing: .15em; color: var(--neon-cyan); border: 1px solid var(--neon-cyan);
+    padding: 4px 14px; border-radius: 999px; background: rgba(0, 240, 255, 0.1);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-size: 32px; line-height: 1.25; margin: 0 0 10px; font-weight: 900;
+    letter-spacing: .02em; color: #fff; text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+  }
+  .hero h1 .hl-cyan { color: var(--neon-cyan); text-shadow: var(--neon-cyan-glow); }
+  .hero h1 .hl-pink { color: var(--neon-pink); text-shadow: var(--neon-pink-glow); }
+  .hero p { margin: 0; color: var(--text-secondary); font-size: 13.5px; font-weight: 700; line-height: 1.6; }
+
+  .rules-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px;
+    margin: 14px 0 6px;
+  }
+  .rule-pill {
+    background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(0, 240, 255, 0.25);
+    border-radius: 12px; padding: 7px 10px; font-size: 12px; font-weight: 800;
+    color: var(--text-secondary); text-align: center;
+  }
+  .rule-pill b { color: var(--neon-yellow); font-family: 'Rajdhani', sans-serif; font-size: 14px; }
+
+  /* Mode Selector */
+  .mode-grid { display: grid; gap: 10px; margin-top: 14px; }
+  .mode-card {
+    background: rgba(15, 23, 42, 0.75); border: 1.5px solid rgba(148, 163, 184, 0.25);
+    border-radius: 16px; padding: 14px; display: flex; align-items: center; gap: 14px;
+    transition: all .15s ease; text-align: left; width: 100%; position: relative;
+  }
+  .mode-card:hover { border-color: rgba(0, 240, 255, 0.6); }
+  .mode-card.selected {
+    border-color: var(--neon-cyan); background: rgba(0, 240, 255, 0.08);
+    box-shadow: 0 0 18px rgba(0, 240, 255, 0.25), inset 0 0 10px rgba(0, 240, 255, 0.05);
+  }
+  .mode-icon {
+    flex: none; width: 48px; height: 48px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; font-size: 24px;
+    background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-neon);
+  }
+  .mode-info { flex: 1; min-width: 0; }
+  .mode-title { font-weight: 900; font-size: 16.5px; color: #fff; display: flex; align-items: center; gap: 8px; }
+  .mode-desc { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-top: 2px; line-height: 1.45; }
+  .mode-radio {
+    flex: none; width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid var(--text-dim); background: transparent; transition: all .15s ease;
+  }
+  .mode-card.selected .mode-radio {
+    border-color: var(--neon-cyan); background: var(--neon-cyan);
+    box-shadow: 0 0 10px var(--neon-cyan);
+  }
+
+  /* Setup sections */
+  .setup-panel {
+    background: rgba(10, 16, 30, 0.95); border: 1.5px solid var(--border-neon);
+    border-radius: 16px; padding: 15px; margin-top: 14px;
+  }
+  .setup-panel h3 {
+    margin: 0 0 10px; font-size: 14px; font-weight: 900; color: var(--neon-cyan);
+    display: flex; align-items: center; gap: 6px; letter-spacing: .04em;
+  }
+  
+  /* Toggle Switch */
+  .switch-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 10px 12px; background: rgba(15, 23, 42, 0.7); border-radius: 12px;
+    border: 1px solid rgba(0, 240, 255, 0.2); margin-top: 10px;
+  }
+  .switch-label { font-size: 13.5px; font-weight: 800; color: #fff; }
+  .switch-desc { font-size: 11.5px; color: var(--text-secondary); font-weight: 600; margin-top: 2px; }
+  .switch-btn-group { display: flex; gap: 4px; background: rgba(0,0,0,0.5); padding: 3px; border-radius: 999px; }
+  .switch-opt {
+    padding: 5px 12px; font-size: 12px; font-weight: 800; border-radius: 999px;
+    background: transparent; color: var(--text-secondary); transition: all .12s;
+  }
+  .switch-opt.active {
+    background: var(--neon-cyan); color: #050811; font-weight: 900;
+    box-shadow: 0 0 10px var(--neon-cyan);
+  }
+
+  /* Segmented buttons */
+  .seg-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .seg-btn {
+    flex: 1; padding: 10px 0; border-radius: 10px; background: rgba(15, 23, 42, 0.8);
+    border: 1.5px solid rgba(148, 163, 184, 0.3); color: var(--text-secondary);
+    font-size: 14px; font-weight: 900; transition: all .12s;
+  }
+  .seg-btn.active {
+    background: rgba(0, 240, 255, 0.15); border-color: var(--neon-cyan);
+    color: var(--neon-cyan); box-shadow: var(--neon-cyan-glow);
+  }
+
+  /* Inputs */
+  .cyber-input {
+    width: 100%; font-family: inherit; font-size: 15px; font-weight: 800;
+    background: rgba(8, 12, 24, 0.9); border: 1.5px solid rgba(0, 240, 255, 0.3);
+    border-radius: 11px; padding: 9px 12px; color: #fff; outline: none;
+    transition: all .15s;
+  }
+  .cyber-input:focus { border-color: var(--neon-cyan); box-shadow: var(--neon-cyan-glow); }
+
+  /* Subject Chips */
+  .subj-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+  .subj-chip {
+    border: 1.5px solid rgba(148, 163, 184, 0.25); background: rgba(15, 23, 42, 0.8);
+    border-radius: 999px; padding: 7px 13px; font-size: 12.5px; font-weight: 800;
+    color: var(--text-secondary); transition: all .12s;
+  }
+  .subj-chip .cnt { font-size: 10.5px; opacity: .7; margin-left: 3px; font-family: 'Rajdhani', sans-serif; }
+  .subj-chip.sel {
+    background: rgba(0, 240, 255, 0.18); border-color: var(--neon-cyan);
+    color: var(--neon-cyan); box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+  }
+
+  /* Start Button */
+  .start-btn {
+    width: 100%; margin-top: 18px; padding: 15px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--neon-cyan), #00a8ff);
+    color: #050811; font-family: 'Orbitron', 'M PLUS Rounded 1c', sans-serif;
+    font-weight: 900; font-size: 19px; letter-spacing: .08em;
+    box-shadow: 0 0 25px rgba(0, 240, 255, 0.5); transition: all .15s;
+  }
+  .start-btn:active { transform: scale(0.98); box-shadow: 0 0 15px rgba(0, 240, 255, 0.8); }
+
+  /* Scoreboard */
+  .scoreboard { display: grid; gap: 8px; margin-bottom: 12px; }
+  .sb-2 { grid-template-columns: 1fr 1fr; }
+  .sb-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .sb-4 { grid-template-columns: 1fr 1fr; }
+  @media(min-width: 480px){ .sb-4 { grid-template-columns: repeat(4, 1fr); } }
+  
+  .sb-card {
+    background: rgba(10, 16, 30, 0.85); border: 1.5px solid var(--border-neon);
+    border-radius: 14px; padding: 8px 10px; position: relative;
+    box-shadow: 0 0 15px rgba(0,0,0,0.4); transition: all .15s;
+  }
+  .sb-card.c1 { border-top: 4px solid var(--p1); }
+  .sb-card.c2 { border-top: 4px solid var(--p2); }
+  .sb-card.c3 { border-top: 4px solid var(--p3); }
+  .sb-card.c4 { border-top: 4px solid var(--p4); }
+  .sb-card.answering {
+    border-color: var(--neon-yellow); box-shadow: 0 0 20px rgba(255, 230, 0, 0.4);
+    background: rgba(255, 230, 0, 0.08);
+  }
+  .sb-card.dq { opacity: .35; filter: grayscale(1); }
+  .sb-name { font-size: 13.5px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+  .sb-marks { display: flex; gap: 8px; margin-top: 3px; font-weight: 900; font-size: 14px; font-family: 'Rajdhani', sans-serif; }
+  .sb-marks .o { color: var(--neon-lime); text-shadow: var(--neon-lime-glow); }
+  .sb-marks .x { color: var(--neon-pink); text-shadow: var(--neon-pink-glow); }
+  .sb-state { font-size: 10.5px; font-weight: 800; color: var(--text-dim); margin-top: 2px; }
+  .sb-state.hot { color: var(--neon-yellow); text-shadow: var(--neon-yellow-glow); }
+
+  /* Question Card */
+  .qmeta { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .qnum {
+    font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: 900;
+    background: var(--neon-cyan); color: #050811; padding: 4px 10px; border-radius: 999px;
+  }
+  .qcat {
+    font-size: 12px; font-weight: 800; background: rgba(15, 23, 42, 0.9);
+    border: 1px solid var(--border-neon); color: var(--text-secondary);
+    padding: 3px 10px; border-radius: 999px;
+  }
+  .qbadge-img {
+    font-size: 11px; font-weight: 900; background: rgba(181, 55, 242, 0.2);
+    border: 1px solid var(--neon-purple); color: var(--neon-purple);
+    padding: 3px 8px; border-radius: 999px;
+  }
+
+  /* Question Image Viewport */
+  .q-img-wrap {
+    margin: 10px 0 12px; border: 1.5px solid var(--border-neon); border-radius: 14px;
+    background: #070a14; padding: 8px; text-align: center; cursor: pointer;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.15); transition: border-color .15s;
+    position: relative;
+  }
+  .q-img-wrap:hover { border-color: var(--neon-cyan); }
+  .q-img-title {
+    font-size: 11px; font-weight: 800; color: var(--neon-cyan);
+    margin-bottom: 6px; letter-spacing: .05em; display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .quiz-svg { max-width: 100%; height: auto; display: block; margin: 0 auto; border-radius: 8px; }
+  .zoom-hint {
+    position: absolute; bottom: 12px; right: 14px; background: rgba(0,0,0,0.7);
+    color: var(--neon-cyan); font-size: 11px; font-weight: 800; padding: 3px 8px;
+    border-radius: 6px; border: 1px solid rgba(0, 240, 255, 0.4);
+  }
+
+  .qtext {
+    font-size: 19px; font-weight: 800; line-height: 1.7; min-height: 90px;
+    color: #fff; word-break: break-all;
+  }
+  .caret {
+    display: inline-block; width: 10px; height: 1.15em; background: var(--neon-cyan);
+    vertical-align: text-bottom; margin-left: 3px; box-shadow: var(--neon-cyan-glow);
+    animation: laserBlink .5s infinite alternate;
+  }
+  @keyframes laserBlink { 0% { opacity: 0; } 100% { opacity: 1; } }
+
+  .qhint { margin-top: 10px; font-size: 13px; font-weight: 800; color: var(--text-secondary); }
+  .qhint.hot { color: var(--neon-yellow); text-shadow: var(--neon-yellow-glow); }
+
+  /* Cyber Timer */
+  .timer-wrap {
+    height: 12px; background: rgba(15, 23, 42, 0.9); border-radius: 999px;
+    overflow: hidden; margin: 12px 0 4px; border: 1px solid var(--border-neon);
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.6);
+  }
+  .timer-bar {
+    height: 100%; width: 100%; background: var(--neon-cyan);
+    box-shadow: var(--neon-cyan-glow); border-radius: 999px; transition: width .05s linear;
+  }
+  .timer-bar.low {
+    background: var(--neon-pink); box-shadow: var(--neon-pink-glow);
+    animation: pulseAlarm .4s infinite alternate;
+  }
+  @keyframes pulseAlarm { 0% { opacity: .7; } 100% { opacity: 1; } }
+  .timer-label { font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 800; color: var(--text-dim); text-align: right; }
+
+  /* Choices */
+  .choices { display: grid; gap: 9px; margin-top: 12px; }
+  .choice-btn {
+    display: flex; gap: 12px; align-items: center; text-align: left;
+    background: rgba(15, 23, 42, 0.85); border: 1.5px solid rgba(148, 163, 184, 0.3);
+    border-radius: 14px; padding: 13px 14px; font-size: 16px; font-weight: 800;
+    color: #fff; width: 100%; line-height: 1.45; transition: all .15s;
+  }
+  .choice-btn .no {
+    flex: none; width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(0, 240, 255, 0.1); border: 1.5px solid var(--border-neon);
+    color: var(--neon-cyan); display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', sans-serif; font-size: 13px; font-weight: 900;
+  }
+  .choice-btn:not(:disabled):hover {
+    border-color: var(--neon-cyan); background: rgba(0, 240, 255, 0.12);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
+  }
+  .choice-btn:not(:disabled):active { transform: scale(0.98); }
+  .choice-btn.correct {
+    background: rgba(0, 255, 102, 0.18); border-color: var(--neon-lime);
+    box-shadow: 0 0 20px rgba(0, 255, 102, 0.4);
+  }
+  .choice-btn.correct .no { background: var(--neon-lime); color: #050811; border-color: var(--neon-lime); }
+  .choice-btn.wrong {
+    background: rgba(255, 0, 85, 0.18); border-color: var(--neon-pink);
+    box-shadow: 0 0 20px rgba(255, 0, 85, 0.4);
+  }
+  .choice-btn.wrong .no { background: var(--neon-pink); color: #fff; border-color: var(--neon-pink); }
+  .choice-btn.dim { opacity: .35; }
+  .choice-btn.preview { opacity: .75; border-style: dashed; }
+  .choice-btn:disabled { cursor: default; }
+
+  .choices-locked-box {
+    margin-top: 14px; background: rgba(10, 15, 28, 0.7); border: 1.5px dashed rgba(0, 240, 255, 0.3);
+    border-radius: 14px; padding: 18px; text-align: center; color: var(--text-secondary);
+    font-size: 13.5px; font-weight: 800;
+  }
+  .choices-locked-box .lock-ico { font-size: 22px; display: block; margin-bottom: 4px; color: var(--neon-cyan); }
+
+  /* Buzz Zone (Arcade Neon Pads) */
+  .buzz-zone { margin-top: 16px; }
+  .buzz-label {
+    text-align: center; font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: 800;
+    color: var(--text-dim); margin-bottom: 8px; letter-spacing: .1em;
+  }
+  .buzz-grid { display: grid; gap: 10px; }
+  .buzz-grid.n2 { grid-template-columns: 1fr 1fr; }
+  .buzz-grid.n3 { grid-template-columns: 1fr 1fr 1fr; }
+  .buzz-grid.n4 { grid-template-columns: 1fr 1fr; }
+  
+  .buzz-btn {
+    border-radius: 18px; padding: 14px 8px; color: #fff; font-weight: 900;
+    min-height: 96px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border: 2px solid rgba(255,255,255,0.2); touch-action: manipulation;
+    transition: all .1s ease; position: relative; overflow: hidden;
+  }
+  .buzz-btn .b-bell { font-size: 26px; line-height: 1; margin-bottom: 3px; }
+  .buzz-btn .b-name { font-size: 16px; font-weight: 900; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .buzz-btn .b-sub { font-size: 11px; opacity: .85; font-family: 'Rajdhani', sans-serif; }
+  
+  .buzz-btn.b1 { background: linear-gradient(145deg, #00b4d8, #0077b6); border-color: var(--p1); box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
+  .buzz-btn.b2 { background: linear-gradient(145deg, #e63946, #b7094c); border-color: var(--p2); box-shadow: 0 0 15px rgba(255, 0, 85, 0.4); }
+  .buzz-btn.b3 { background: linear-gradient(145deg, #06d6a0, #058c68); border-color: var(--p3); box-shadow: 0 0 15px rgba(0, 255, 102, 0.4); }
+  .buzz-btn.b4 { background: linear-gradient(145deg, #ffb703, #e85d04); border-color: var(--p4); box-shadow: 0 0 15px rgba(255, 230, 0, 0.4); color: #050811; }
+  
+  .buzz-btn.ready { animation: neonPulse 1.2s infinite alternate; }
+  @keyframes neonPulse {
+    0% { filter: brightness(1); transform: scale(1); }
+    100% { filter: brightness(1.25); transform: scale(1.02); }
+  }
+  .buzz-btn:active { transform: scale(0.95); }
+  .buzz-btn:disabled { opacity: .25; filter: grayscale(1); animation: none; cursor: default; }
+
+  /* Explanation HUD */
+  .explain-box {
+    margin-top: 14px; background: rgba(10, 16, 30, 0.95); border: 2px solid var(--neon-cyan);
+    border-radius: 16px; padding: 16px; box-shadow: 0 0 25px rgba(0, 240, 255, 0.2);
+  }
+  .ex-header { font-size: 16px; font-weight: 900; margin-bottom: 6px; }
+  .ex-header.ok { color: var(--neon-lime); text-shadow: var(--neon-lime-glow); }
+  .ex-header.ng { color: var(--neon-pink); text-shadow: var(--neon-pink-glow); }
+  .ex-ans-line { font-size: 15px; font-weight: 900; color: #fff; margin-bottom: 8px; }
+  .ex-desc {
+    font-size: 14px; font-weight: 700; color: var(--text-primary); line-height: 1.7;
+    border-top: 1px dashed rgba(0, 240, 255, 0.3); padding-top: 8px; margin-top: 4px;
+  }
+  
+  /* Choice Breakdown (Feature 5) */
+  .choices-breakdown {
+    margin-top: 12px; background: rgba(5, 8, 16, 0.8); border-radius: 12px;
+    padding: 10px 12px; border: 1px solid rgba(148, 163, 184, 0.2);
+  }
+  .cb-title { font-size: 12px; font-weight: 900; color: var(--neon-yellow); margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+  .cb-item { font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; line-height: 1.5; }
+  .cb-item.correct-item { color: var(--neon-lime); }
+
+  /* Review clip button (Feature 4) */
+  .clip-btn {
+    width: 100%; margin-top: 10px; background: rgba(181, 55, 242, 0.15);
+    border: 1.5px solid var(--neon-purple); color: #fff; font-size: 13px; font-weight: 800;
+    padding: 10px; border-radius: 10px; transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .clip-btn.clipped {
+    background: var(--neon-purple); color: #fff; box-shadow: var(--neon-purple-glow);
+  }
+
+  .next-btn {
+    width: 100%; margin-top: 12px; background: linear-gradient(135deg, var(--neon-cyan), #0077b6);
+    color: #050811; font-weight: 900; font-size: 16px; padding: 13px; border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+  }
+  .next-btn:active { transform: scale(0.98); }
+
+  /* Emote Bar (Online) */
+  .emote-bar {
+    display: flex; gap: 6px; justify-content: center; margin-top: 12px;
+    background: rgba(10, 15, 28, 0.7); padding: 6px; border-radius: 999px;
+    border: 1px solid rgba(0, 240, 255, 0.2);
+  }
+  .emote-btn {
+    background: transparent; border: none; font-size: 20px; padding: 4px 8px;
+    border-radius: 8px; transition: transform .1s;
+  }
+  .emote-btn:active { transform: scale(1.3); }
+  .floating-emote {
+    position: fixed; pointer-events: none; z-index: 9999; font-size: 44px;
+    animation: floatUp 1.8s forwards cubic-bezier(0.1, 0.8, 0.3, 1);
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0) scale(0.5); opacity: 0; }
+    20% { transform: translateY(-30px) scale(1.2); opacity: 1; }
+    80% { transform: translateY(-120px) scale(1); opacity: 0.9; }
+    100% { transform: translateY(-160px) scale(0.8); opacity: 0; }
+  }
+
+  /* Modals */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+    z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-box {
+    background: rgba(12, 18, 34, 0.96); border: 2px solid var(--neon-cyan);
+    border-radius: 20px; padding: 20px; max-width: 520px; width: 100%; max-height: 85vh;
+    overflow-y: auto; box-shadow: 0 0 35px rgba(0, 240, 255, 0.3); position: relative;
+  }
+  .modal-close {
+    position: absolute; top: 14px; right: 14px; background: rgba(255,255,255,0.1);
+    border: 1px solid var(--border-neon); color: #fff; width: 30px; height: 30px;
+    border-radius: 50%; font-size: 16px; font-weight: 900;
+  }
+
+  /* Result screen */
+  .result-hero { text-align: center; padding: 12px 6px; }
+  .crown-icon { font-size: 54px; filter: drop-shadow(0 0 15px rgba(255, 230, 0, 0.6)); }
+  .result-title { font-size: 28px; font-weight: 900; color: #fff; margin: 8px 0 4px; text-shadow: 0 0 15px rgba(255,255,255,0.5); }
+  .result-sub { font-size: 14px; color: var(--text-secondary); font-weight: 700; margin: 0; }
+
+  .share-box {
+    margin-top: 16px; background: rgba(10, 16, 30, 0.9); border: 1.5px solid #06c755;
+    border-radius: 16px; padding: 14px; box-shadow: 0 0 20px rgba(6, 199, 85, 0.25);
+  }
+  .share-btn {
+    width: 100%; margin-top: 10px; background: #06c755; color: #fff;
+    font-weight: 900; font-size: 16px; padding: 13px; border-radius: 12px;
+    box-shadow: 0 0 15px rgba(6, 199, 85, 0.4);
+  }
+
+  /* Flash message */
+  .flash-bar { text-align: center; font-weight: 900; font-size: 16px; min-height: 24px; margin-top: 8px; }
+  .flash-bar.ok { color: var(--neon-lime); text-shadow: var(--neon-lime-glow); }
+  .flash-bar.ng { color: var(--neon-pink); text-shadow: var(--neon-pink-glow); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- TOP HUD -->
+  <div class="topbar">
+    <div class="logo">
+      <span class="tag">RAD</span>·<span class="sub">CYBER</span> 国試早押し
+    </div>
+    <div class="top-actions">
+      <button class="hud-btn badge-btn" id="btnWrongManage" type="button" title="苦手問題を管理">
+        🔥 復習 <span class="hud-badge" id="wrongBadge">0</span>
+      </button>
+      <button class="hud-btn active" id="bgmToggleBtn" type="button">🎵 BGM</button>
+      <button class="hud-btn active" id="sfxToggleBtn" type="button">🔊 SE</button>
+    </div>
+  </div>
+
+  <!-- TITLE SCREEN -->
+  <section id="screenTitle">
+    <div class="cyber-card">
+      <div class="hero">
+        <span class="cyber-badge">MEDICAL EXAM BATTLE HUD</span>
+        <h1>放射線技師<br><span class="hl-cyan">国試早押し</span><span class="hl-pink">バトル</span></h1>
+        <p>1文字ずつ流れる問題文を誰よりも早く見極めろ。<br>オンライン対戦・苦手復習・画像問題に対応した強化版！</p>
+        
+        <div class="rules-grid">
+          <div class="rule-pill">正解で <b>○ 1点</b></div>
+          <div class="rule-pill"><b>7点先取</b> で勝利</div>
+          <div class="rule-pill">誤答で <b>×</b>（3つで失格）</div>
+          <div class="rule-pill">回答時間 <b>5.0秒</b></div>
+        </div>
+      </div>
+
+      <!-- Mode Selector -->
+      <div class="mode-grid">
+        <button class="mode-card selected" type="button" data-mode="multi">
+          <div class="mode-icon">👥</div>
+          <div class="mode-info">
+            <div class="mode-title">みんなで対戦</div>
+            <div class="mode-desc">1台の端末を囲んで2〜4人で早押し勝負</div>
+          </div>
+          <div class="mode-radio"></div>
+        </button>
+
+        <button class="mode-card" type="button" data-mode="cpu">
+          <div class="mode-icon">🤖</div>
+          <div class="mode-info">
+            <div class="mode-title">CPU対戦 <span id="cpuDiffBadge" style="font-size:11px;color:var(--neon-yellow);border:1px solid var(--neon-yellow);padding:1px 6px;border-radius:999px;">中級</span></div>
+            <div class="mode-desc">1人でCPUと対決。初級・中級・上級を選べる！</div>
+          </div>
+          <div class="mode-radio"></div>
+        </button>
+
+        <button class="mode-card" type="button" data-mode="online">
+          <div class="mode-icon">🌐</div>
+          <div class="mode-info">
+            <div class="mode-title">オンライン対戦 <span style="font-size:10px;background:var(--neon-pink);color:#fff;padding:1px 6px;border-radius:999px;">NEW</span></div>
+            <div class="mode-desc">URLを送るだけ！離れた友達とリアルタイム対戦</div>
+          </div>
+          <div class="mode-radio"></div>
+        </button>
+
+        <button class="mode-card" type="button" data-mode="practice">
+          <div class="mode-icon">📖</div>
+          <div class="mode-info">
+            <div class="mode-title">ひとりで練習</div>
+            <div class="mode-desc">早押しなしで全10問。じっくり解いて解説を熟読</div>
+          </div>
+          <div class="mode-radio"></div>
+        </button>
+
+        <button class="mode-card" type="button" data-mode="review">
+          <div class="mode-icon">🔥</div>
+          <div class="mode-info">
+            <div class="mode-title">苦手克服モード <span id="reviewCountBadge" style="font-size:11px;background:var(--neon-purple);color:#fff;padding:1px 6px;border-radius:999px;">0問</span></div>
+            <div class="mode-desc">間違えた問題・保存した問題だけを集中的に出題</div>
+          </div>
+          <div class="mode-radio"></div>
+        </button>
+      </div>
+
+      <!-- MULTI SETUP -->
+      <div class="setup-panel" id="panelMulti">
+        <h3>👥 プレイヤー人数</h3>
+        <div class="seg-row" id="countRow">
+          <button type="button" data-n="2" class="seg-btn active">2人</button>
+          <button type="button" data-n="3" class="seg-btn">3人</button>
+          <button type="button" data-n="4" class="seg-btn">4人</button>
+        </div>
+        <div id="nameInputs"></div>
+      </div>
+
+      <!-- CPU SETUP -->
+      <div class="setup-panel hidden" id="panelCpu">
+        <h3>🤖 あなたの名前 ＆ CPU難易度</h3>
+        <input class="cyber-input" id="cpuUserName" type="text" value="あなた" maxlength="10" placeholder="あなたの名前" style="margin-bottom:12px;">
+        <div style="font-size:12.5px;font-weight:800;color:var(--text-secondary);margin-bottom:6px;">CPU難易度を選択：</div>
+        <div class="seg-row" id="cpuDiffRow">
+          <button type="button" data-diff="easy" class="seg-btn">初級<br><small style="font-size:10px;opacity:.8;">D判定/遅め</small></button>
+          <button type="button" data-diff="normal" class="seg-btn active">中級<br><small style="font-size:10px;opacity:.8;">合格ライン</small></button>
+          <button type="button" data-diff="hard" class="seg-btn">上級<br><small style="font-size:10px;opacity:.8;">首席/超速</small></button>
+        </div>
+      </div>
+
+      <!-- ONLINE SETUP -->
+      <div class="setup-panel hidden" id="panelOnline">
+        <h3>🌐 リアルタイムオンライン対戦</h3>
+        <div class="seg-row" id="onlineRoleRow">
+          <button type="button" data-role="host" class="seg-btn active">ルームを作る (ホスト)</button>
+          <button type="button" data-role="guest" class="seg-btn">参加する (ゲスト)</button>
+        </div>
+
+        <div id="hostArea">
+          <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:8px;">あなたの名前：</div>
+          <input class="cyber-input" id="onlineHostName" type="text" value="ホスト" maxlength="10" style="margin-bottom:10px;">
+          <div style="background:rgba(0,0,0,0.5);border:1px dashed var(--border-neon);padding:12px;border-radius:12px;text-align:center;">
+            <div style="font-size:11.5px;color:var(--text-dim);">あなたのルームID</div>
+            <div id="hostRoomIdDisplay" style="font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;color:var(--neon-cyan);margin:4px 0;">RAD-????</div>
+            <button class="hud-btn" id="btnCopyInviteLink" type="button" style="width:100%;justify-content:center;margin-top:6px;">
+              🔗 招待リンクをコピー (LINEに貼る)
+            </button>
+            <div id="hostLobbyStatus" style="font-size:12px;font-weight:800;color:var(--neon-yellow);margin-top:8px;">
+              相手の接続を待っています...
+            </div>
+          </div>
+        </div>
+
+        <div id="guestArea" class="hidden">
+          <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:8px;">あなたの名前：</div>
+          <input class="cyber-input" id="onlineGuestName" type="text" value="ゲスト" maxlength="10" style="margin-bottom:10px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">合言葉・ルームID：</div>
+          <input class="cyber-input" id="inputRoomId" type="text" placeholder="例: RAD-1234" style="text-transform:uppercase;margin-bottom:10px;">
+          <button class="hud-btn active" id="btnConnectHost" type="button" style="width:100%;justify-content:center;padding:12px;">
+            ⚡ ルームへ参加
+          </button>
+          <div id="guestConnStatus" style="font-size:12px;font-weight:800;text-align:center;margin-top:8px;"></div>
+        </div>
+      </div>
+
+      <!-- PRACTICE SETUP -->
+      <div class="setup-panel hidden" id="panelPractice">
+        <h3>📖 ひとりで練習モード</h3>
+        <p style="margin:0;font-size:13px;color:var(--text-secondary);line-height:1.6;">
+          早押しプレッシャーなしで選んだ教科から最大10問を出題。1問ごとに詳しい解説と各選択肢の要点を確認できます。
+        </p>
+      </div>
+
+      <!-- REVIEW SETUP -->
+      <div class="setup-panel hidden" id="panelReview">
+        <h3>🔥 苦手克服・復習モード</h3>
+        <p style="margin:0;font-size:13px;color:var(--text-secondary);line-height:1.6;">
+          過去に間違えた問題や、クリップした問題だけを出題します。<br>
+          現在登録中の苦手問題：<b id="reviewPanelCount" style="color:var(--neon-pink)">0問</b>
+        </p>
+      </div>
+
+      <!-- COMMON OPTIONS (Feature 2 & Subjects) -->
+      <div class="setup-panel">
+        <h3>⚙️ バトル設定</h3>
+        
+        <!-- Feature 2: 選択肢事前表示トグル -->
+        <div class="switch-row">
+          <div>
+            <div class="switch-label">👁️ 選択肢の事前表示</div>
+            <div class="switch-desc">OFFにすると早押しするまで選択肢がロックされます</div>
+          </div>
+          <div class="switch-btn-group" id="previewSwitchGroup">
+            <button type="button" data-val="off" class="switch-opt active">OFF (本格)</button>
+            <button type="button" data-val="on" class="switch-opt">ON (カジュアル)</button>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:6px;">出題する教科：</div>
+          <div class="subj-chips" id="subjChips"></div>
+          <div id="subjNote" style="font-size:12px;color:var(--text-dim);margin-top:6px;line-height:1.5;"></div>
+        </div>
+      </div>
+
+      <button class="start-btn" id="startBtn" type="button">▶ バトル開始！</button>
+    </div>
+  </section>
+
+  <!-- GAME SCREEN -->
+  <section id="screenGame" class="hidden">
+    <!-- Scoreboard -->
+    <div class="scoreboard sb-2" id="scoreboard"></div>
+
+    <!-- Question Metadata -->
+    <div class="qmeta">
+      <span class="qnum" id="qNum">第1問</span>
+      <span class="qcat" id="qCat">診療画像機器学</span>
+      <span class="qbadge-img hidden" id="qBadgeImg">📷 画像問題</span>
+    </div>
+
+    <!-- Question Card -->
+    <div class="cyber-card">
+      <!-- Image container (Feature 6) -->
+      <div class="q-img-wrap hidden" id="qImgWrap">
+        <div class="q-img-title" id="qImgTitle">📷 クリックして拡大表示</div>
+        <div id="qSvgContainer"></div>
+        <span class="zoom-hint">🔍 タップで拡大</span>
+      </div>
+
+      <div class="qtext" id="qText"></div>
+      <div class="qhint" id="qHint">分かったら自分のボタンを押して！</div>
+
+      <div class="timer-wrap hidden" id="timerWrap">
+        <div class="timer-bar" id="timerBar"></div>
+      </div>
+      <div class="timer-label hidden" id="timerLabel">回答まで 5.0秒</div>
+    </div>
+
+    <div class="flash-bar" id="flash"></div>
+
+    <!-- Choice Area (Feature 2 & 5) -->
+    <div id="choiceArea"></div>
+
+    <!-- Buzz Zone -->
+    <div class="buzz-zone" id="buzzZone">
+      <div class="buzz-label">▼ ARCADE BUZZ PADS ▼</div>
+      <div class="buzz-grid n2" id="buzzGrid"></div>
+    </div>
+
+    <!-- Emote Bar (Online mode) -->
+    <div class="emote-bar hidden" id="emoteBar">
+      <button class="emote-btn" data-em="👏" type="button">👏</button>
+      <button class="emote-btn" data-em="⚡" type="button">⚡</button>
+      <button class="emote-btn" data-em="🔥" type="button">🔥</button>
+      <button class="emote-btn" data-em="😱" type="button">😱</button>
+      <button class="emote-btn" data-em="🧠" type="button">🧠</button>
+    </div>
+  </section>
+
+  <!-- RESULT SCREEN -->
+  <section id="screenResult" class="hidden">
+    <div class="cyber-card" style="text-align:center;">
+      <div class="result-hero">
+        <div class="crown-icon" id="resultEmoji">👑</div>
+        <h2 class="result-title" id="resultTitle">VICTORY!</h2>
+        <p class="result-sub" id="resultSub"></p>
+      </div>
+
+      <div id="rankList" style="display:grid;gap:8px;margin:18px 0;"></div>
+
+      <!-- Share Box -->
+      <div class="share-box">
+        <div style="font-weight:900;font-size:14px;color:#06c755;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:6px;">
+          <span>💬</span> LINEで結果をシェア
+        </div>
+        <div id="copyPreview" style="background:rgba(0,0,0,0.6);border:1px dashed #06c755;padding:10px;border-radius:10px;font-size:12px;color:#e2e8f0;white-space:pre-wrap;text-align:left;max-height:160px;overflow-y:auto;line-height:1.6;"></div>
+        <button class="share-btn" id="copyResultBtn" type="button">結果をコピーしてLINEに貼る</button>
+        <div id="copyStatusText" style="font-size:12px;font-weight:800;color:#06c755;margin-top:6px;"></div>
+      </div>
+
+      <div style="display:grid;gap:10px;margin-top:20px;">
+        <button class="start-btn" id="btnPlayAgain" type="button">もう一度あそぶ</button>
+        <button class="hud-btn" id="btnBackHome" type="button" style="width:100%;justify-content:center;padding:12px;border-radius:12px;">タイトルへ戻る</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- IMAGE ZOOM MODAL -->
+<div class="modal-overlay hidden" id="modalZoom">
+  <div class="modal-box">
+    <button class="modal-close" id="btnCloseZoom">✕</button>
+    <div style="font-size:14px;font-weight:900;color:var(--neon-cyan);margin-bottom:12px;" id="modalZoomTitle">画像拡大表示</div>
+    <div id="modalZoomBody" style="text-align:center;"></div>
+  </div>
+</div>
+
+<!-- WEAK POINTS (WRONG QUESTIONS) MODAL -->
+<div class="modal-overlay hidden" id="modalWrong">
+  <div class="modal-box">
+    <button class="modal-close" id="btnCloseWrong">✕</button>
+    <div style="font-size:16px;font-weight:900;color:var(--neon-pink);margin-bottom:12px;">
+      🔥 苦手問題・要復習リスト (<span id="wrongModalCount">0</span>問)
+    </div>
+    <div id="wrongListContainer" style="display:grid;gap:8px;max-height:55vh;overflow-y:auto;text-align:left;"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="hud-btn active" id="btnStartWrongReview" type="button" style="flex:1;justify-content:center;padding:10px;">
+        この問題を復習する
+      </button>
+      <button class="hud-btn" id="btnClearAllWrong" type="button" style="border-color:var(--neon-pink);color:var(--neon-pink);padding:10px;">
+        全件削除
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= QUESTIONS DATA ================= */
+
+var QUESTIONS = [
+{c:"放射線安全管理学",q:"職業被ばくにおける実効線量限度で正しいのはどれか。",ch:["1年間20 mSv","5年間100 mSvかつ1年間50 mSv","1年間100 mSv","5年間50 mSv"],a:1,ex:"職業被ばくの実効線量限度は5年100 mSv、かつ年間50 mSv。"},
+{c:"放射線安全管理学",q:"公衆被ばくの実効線量限度はどれか。",ch:["1年間1 mSv","1年間5 mSv","1年間20 mSv","1年間50 mSv"],a:0,ex:"公衆の実効線量限度は年間1 mSv。"},
+{c:"放射線安全管理学",q:"職業被ばくにおける水晶体の等価線量限度で正しいのはどれか。",ch:["1年間20 mSv","1年間150 mSv","5年間100 mSvかつ1年間50 mSv","1年間500 mSv"],a:2,ex:"水晶体は5年100 mSv、かつ年間50 mSv。"},
+{c:"放射線安全管理学",q:"職業被ばくにおける皮膚の等価線量限度はどれか。",ch:["1年間50 mSv","1年間150 mSv","1年間300 mSv","1年間500 mSv"],a:3,ex:"皮膚の等価線量限度は年間500 mSv。"},
+{c:"放射線安全管理学",q:"公衆被ばくにおける皮膚の等価線量限度はどれか。",ch:["1年間1 mSv","1年間20 mSv","1年間50 mSv","1年間500 mSv"],a:2,ex:"公衆の皮膚は年間50 mSv。"},
+{c:"放射線安全管理学",q:"妊娠中の女子の職業被ばくで、腹部表面の等価線量限度は妊娠が分かった後、出産までどれか。",ch:["1 mSv","2 mSv","5 mSv","10 mSv"],a:1,ex:"妊娠中の女子は腹部表面で2 mSvまで。"},
+{c:"放射線生物学",q:"確定的影響の特徴はどれか。",ch:["しきい線量が存在しない","しきい線量が存在する","発生確率が線量に比例する","重篤度は線量に依存しない"],a:1,ex:"確定的影響にはしきい線量があり、重篤度が線量で増す。"},
+{c:"放射線生物学",q:"水晶体の確定的影響（白内障）のしきい線量に最も近いのはどれか。",ch:["0.1 Gy","0.5 Gy","2 Gy","5 Gy"],a:1,ex:"ICRPは水晶体のしきい線量を約0.5 Gyとしている。"},
+{c:"放射化学",q:"半減期6時間の99mTcが740 MBqあった。12時間後の放射能はどれか。",ch:["370 MBq","185 MBq","92.5 MBq","148 MBq"],a:1,ex:"12時間は半減期2回分。740÷4＝185 MBq。"},
+{c:"放射化学",q:"半減期8日の131Iが400 MBqあった。24日後の放射能はどれか。",ch:["200 MBq","100 MBq","50 MBq","25 MBq"],a:2,ex:"24日は半減期3回分。400÷8＝50 MBq。"},
+{c:"放射線物理学",q:"線量率が距離1 mで100 μGy/hの点線源がある。2 mでの線量率はどれか。",ch:["50 μGy/h","25 μGy/h","10 μGy/h","200 μGy/h"],a:1,ex:"逆二乗則で距離2倍なら線量率は1/4、25 μGy/h。"},
+{c:"放射化学",q:"物理的半減期6時間、生物学的半減期12時間の核種の実効半減期はどれか。",ch:["3時間","4時間","8時間","18時間"],a:1,ex:"1/Teff＝1/6＋1/12＝1/4、実効半減期は4時間。"},
+{c:"放射線物理学",q:"ある線束の強さが半価層3枚分の遮へいで何分の1になるか。",ch:["1/2","1/4","1/6","1/8"],a:3,ex:"半価層1枚で1/2、3枚で(1/2)の3乗＝1/8。"},
+{c:"診療画像機器学",q:"CT値で空気の値はどれか。",ch:["−1000 HU","−100 HU","0 HU","＋1000 HU"],a:0,ex:"空気は−1000 HU、水は0 HU。"},
+{c:"エックス線撮影技術学",q:"管電圧を上げたときの変化で正しいのはどれか。",ch:["線質は軟らかくなる","半価層は小さくなる","線質は硬くなり半価層は大きくなる","コントラストは高くなる"],a:2,ex:"管電圧上昇で線質は硬化、半価層増大、コントラスト低下。"},
+{c:"放射線計測学",q:"γ線のエネルギー測定に適した検出器はどれか。",ch:["GM計数管","NaI(Tl)シンチレーション検出器","電離箱","TLD"],a:1,ex:"エネルギー測定にはNaI(Tl)などのシンチレーション検出器。"},
+{c:"基礎医学大要",q:"インスリンを分泌する細胞はどれか。",ch:["膵臓ランゲルハンス島のα細胞","膵臓ランゲルハンス島のβ細胞","副腎皮質の細胞","甲状腺の濾胞細胞"],a:1,ex:"インスリンは膵臓β細胞から分泌される。"},
+{c:"放射線生物学",q:"細胞周期で放射線感受性が最も高い時期はどれか。",ch:["G1期","S期","G2期","M期"],a:3,ex:"分裂期（M期）が最も感受性が高い。"},
+{c:"放射線生物学",q:"放射線感受性が高い腫瘍はどれか。",ch:["骨肉腫","精上皮腫（セミノーマ）","悪性黒色腫","膵癌"],a:1,ex:"精上皮腫・悪性リンパ腫などは高感受性。"},
+{c:"核医学検査技術学",q:"201Tlが正常な脳に集積しない理由はどれか。",ch:["脳血液関門を通過しないため","血流が乏しいため","半減期が短いため","腎臓からすぐ排泄されるため"],a:0,ex:"201TlはBBBを通過しない。脳腫瘍ではBBBが破壊され集積する。"},
+{c:"核医学検査技術学",q:"副腎皮質シンチグラフィに用いる放射性医薬品はどれか。",ch:["123I-MIBG","131I-アドステロール","99mTc-MAA","201TlCl"],a:1,ex:"副腎皮質は131I-アドステロール（365 keVのため高エネルギ用コリメータ）。"},
+{c:"核医学検査技術学",q:"褐色細胞腫の検索に用いる放射性医薬品はどれか。",ch:["99mTc-GSA","131I-アドステロール","123I-MIBG","99mTc-PMT"],a:2,ex:"副腎髄質・褐色細胞腫には123I-MIBG。"},
+{c:"核医学検査技術学",q:"肺血流シンチグラフィで用いる99mTc-MAAの粒子径はどれか。",ch:["1〜5 nm","10〜60 μm","200〜1000 nm","1〜5 mm"],a:1,ex:"MAAは10〜60 μmで、肺毛細血管（約8 μm）に一過性に塞栓する。"},
+{c:"核医学検査技術学",q:"99mTc-MAA投与後の肺血流シンチで脳に高集積がみられた。考えられるのはどれか。",ch:["標識不良","右左シャント","てんかん発作","三尖弁閉鎖不全"],a:1,ex:"肺を通過して脳に集積するのは右左シャントの所見。"},
+{c:"核医学検査技術学",q:"換気・血流ミスマッチがみられる疾患はどれか。",ch:["肺気腫","気管支喘息","肺血栓塞栓症","慢性気管支炎"],a:2,ex:"血流のみ低下するミスマッチは肺塞栓症が代表。"},
+{c:"核医学検査技術学",q:"肝受容体シンチグラフィの99mTc-GSAで、指標HH15について正しいのはどれか。",ch:["肝機能が悪いと低値になる","肝機能が悪いと高値になる","正常値は0.9である","肝摂取率を表す"],a:1,ex:"HH15は血中消失率。正常0.5、重症0.9で、悪いと高くなる。"},
+{c:"核医学検査技術学",q:"センチネルリンパ節シンチグラフィの適応疾患はどれか。",ch:["乳癌","白血病","慢性腎炎","再生不良性貧血"],a:0,ex:"センチネルリンパ節生検は乳癌や悪性黒色腫などで行う。"},
+{c:"核医学検査技術学",q:"メッケル憩室の検出に用いる放射性医薬品はどれか。",ch:["99mTc-HSA","99mTc-パーテクネテイト","99mTc-DTPA","99mTc-GSA"],a:1,ex:"異所性胃粘膜は99mTc-パーテクネテイトで検出する。"},
+{c:"核医学検査技術学",q:"99Mo-99mTcジェネレータで親核種と娘核種が達する平衡はどれか。",ch:["永続平衡","過渡平衡","放射平衡","化学平衡"],a:1,ex:"99Mo（66時間）と99mTc（6時間）は過渡平衡。"},
+{c:"核医学検査技術学",q:"SPECTの散乱線補正であるTEW法の特徴はどれか。",ch:["均一な減弱係数を仮定する","3つのエネルギーウィンドウを用いる","逐次近似法の一種である","伝達関数を用いる"],a:1,ex:"TEW法はメインと両側サブの3ウィンドウで散乱線を推定する。"},
+{c:"診療画像検査学",q:"MRIのT1強調像で高信号を呈するのはどれか。",ch:["水","脂肪","空気","皮質骨"],a:1,ex:"T1強調像では脂肪が高信号。"},
+{c:"診療画像検査学",q:"超音波検査で音響陰影（アコースティックシャドウ）がみられるのはどれか。",ch:["肝嚢胞","胆石","子宮筋腫","甲状腺嚢胞"],a:1,ex:"結石の後方には音響陰影が生じる。"},
+{c:"エックス線撮影技術学",q:"Waters法で観察しやすいのはどれか。",ch:["乳突蜂巣","上顎洞","下顎骨","頚椎"],a:1,ex:"Waters法は上顎洞の観察に適する。"},
+{c:"画像工学",q:"X線写真の粒状性の評価に用いられるのはどれか。",ch:["MTF","ウィナースペクトル","特性曲線","DQE"],a:1,ex:"粒状性はウィナースペクトル、鮮鋭性はMTFで評価する。"},
+{c:"エックス線撮影技術学",q:"散乱線を除去してコントラストを改善する器具はどれか。",ch:["グリッド","フィルタ","コリメータ","蛍光板"],a:0,ex:"グリッドは散乱線を除去する。"},
+{c:"診療画像機器学",q:"マンモグラフィで用いられるターゲットとフィルタの組合せとして代表的なのはどれか。",ch:["W/Al","Mo/Mo","Rh/Ag","W/Cu"],a:1,ex:"マンモグラフィはMoターゲット・Moフィルタが代表的。"},
+{c:"放射線治療技術学",q:"電子線治療が適している病変はどれか。",ch:["深部の腫瘍","表在性の病変","骨盤深部の腫瘍","脊髄に接した腫瘍"],a:1,ex:"電子線は飛程が短く表在性病変に適する。"},
+{c:"放射線治療技術学",q:"PTV（計画標的体積）の説明で正しいのはどれか。",ch:["CTVそのものである","CTVに内部マージンとセットアップマージンを加えたもの","GTVからマージンを引いたもの","リスク臓器のことである"],a:1,ex:"PTV＝CTV＋IM＋SM。"},
+{c:"放射線治療技術学",q:"重粒子線治療で生物線量（GyE）の求め方はどれか。",ch:["物理線量÷RBE","物理線量×RBE","物理線量＋RBE","物理線量×OER"],a:1,ex:"生物線量＝物理線量×RBE。"},
+{c:"放射線治療技術学",q:"重粒子線の特徴はどれか。",ch:["酸素効果（OER）が大きい","酸素効果（OER）が小さい","亜致死障害の回復が大きい","ブラッグピークがない"],a:1,ex:"高LETの重粒子線はOERが小さく、SLDRも小さい。"},
+{c:"放射線治療技術学",q:"放射線治療装置の保守管理で、線量計の校正について正しいのはどれか。",ch:["週1回、院内で行う","月1回、院内で行う","年1回、指定された機関で行う","校正は不要である"],a:2,ex:"線量計の校正は年1回・指定機関。出力測定は週1回以上。"},
+{c:"放射線治療技術学",q:"吸収線量の単位はどれか。",ch:["Sv","Bq","Gy","C/kg"],a:2,ex:"吸収線量はGy（グレイ）。"},
+{c:"核医学検査技術学",q:"ガンマカメラで99mTc（140 keV）の撮像に用いるコリメータはどれか。",ch:["高エネルギ用","中エネルギ用","低エネルギ用","ピンホール専用のみ"],a:2,ex:"140 keVは低エネルギ用コリメータ（LEHRなど）。"},
+{c:"放射線生物学",q:"間接作用の主体となるのはどれか。",ch:["DNAの直接の電離","水の放射線分解で生じるフリーラジカル","熱作用","光電効果"],a:1,ex:"間接作用はヒドロキシルラジカルなどが主体。"},
+{c:"放射化学",q:"ある放射性核種の放射能が1/16になるのは、半減期何回分か。",ch:["2回","3回","4回","5回"],a:2,ex:"(1/2)の4乗＝1/16なので半減期4回分。"},
+{c:"放射線安全管理学",q:"放射線防護の3原則に含まれないのはどれか。",ch:["時間を短くする","距離をとる","遮へいをする","線量を増やす"],a:3,ex:"外部被ばく防護は時間・距離・遮へいの3原則。"},
+{c:"核医学検査技術学",q:"肝胆道シンチグラフィに用いる放射性医薬品はどれか。",ch:["99mTc-PMT","99mTc-MAA","123I-MIBG","99mTc-GSA"],a:0,ex:"肝胆道は99mTc-PMT。胆道閉鎖症の診断などに用いる。"},
+{c:"診療画像検査学",q:"造影CTで動脈相の撮像タイミングを決める方法はどれか。",ch:["ボーラストラッキング法","テストインジェクション法のみ","固定時間法のみ","呼吸停止法"],a:0,ex:"ボーラストラッキングで造影剤の到達をモニタして撮像する（テストインジェクション法もあるが代表はボーラストラッキング）。"},
+{c:"放射線物理学",q:"光電効果が起こりやすい条件はどれか。",ch:["高エネルギーで原子番号が小さい","低エネルギーで原子番号が大きい","高エネルギーで原子番号が大きい","エネルギーによらない"],a:1,ex:"光電効果は低エネルギー、高原子番号で起こりやすい。"},
+{c:"放射線物理学",q:"コンプトン散乱で散乱X線のエネルギーが最も小さくなるのはどれか。",ch:["前方散乱","90度散乱","後方散乱（180度）","方向で変わらない"],a:2,ex:"後方散乱で原子へのエネルギー移行が最大、散乱線は最小エネルギー。"},
+{c:"放射線物理学",q:"特性X線が発生するのはどれか。",ch:["制動放射が起きたとき","内殻電子がはじき出され外殻電子が遷移したとき","陽電子が消滅したとき","中性子が捕獲されたとき"],a:1,ex:"内殻の空位に外殻電子が落ち込む際に特性X線が出る。"},
+{c:"放射線物理学",q:"LET（線エネルギー付与）が最も大きい放射線はどれか。",ch:["γ線","X線","電子線","α線"],a:3,ex:"α線は高LET放射線の代表。"},
+{c:"放射化学",q:"壊変定数λと半減期Tの関係はどれか。",ch:["λ＝T/0.693","λ＝0.693/T","λ＝0.693×T","λ＝1/T"],a:1,ex:"λ＝ln2/T＝0.693/T。"},
+{c:"放射化学",q:"β＋壊変で原子番号はどうなるか。",ch:["2増える","1増える","1減る","変わらない"],a:2,ex:"β＋壊変では陽子が中性子になり原子番号は1減る。"},
+{c:"放射化学",q:"同中性子体（アイソトーン）の説明はどれか。",ch:["原子番号が同じ","質量数が同じ","中性子数が同じ","電子数が同じ"],a:2,ex:"アイソトーンは中性子数が同じ核種の集まり。"},
+{c:"放射化学",q:"放射能のSI単位はどれか。",ch:["Gy","Sv","Bq","C/kg"],a:2,ex:"放射能はBq（ベクレル）、1秒あたりの壊変数。"},
+{c:"放射線生物学",q:"ベルゴニー・トリボンドーの法則の内容はどれか。",ch:["分裂頻度が高く分化度が低い細胞ほど感受性が高い","分化した細胞ほど感受性が高い","酸素が多いほど感受性が低い","線量率が高いほど効果は小さい"],a:0,ex:"増殖が盛んで未分化な細胞ほど放射線感受性が高い。"},
+{c:"放射線生物学",q:"低LET放射線の酸素効果比（OER）のおよその値はどれか。",ch:["1","3","10","30"],a:1,ex:"X線・γ線のOERは約2.5〜3。"},
+{c:"放射線生物学",q:"急性放射線症候群で最も低い線量域から現れるのはどれか。",ch:["造血器症候群","消化管症候群","神経血管症候群","皮膚症候群のみ"],a:0,ex:"造血器症候群が最も低線量（約1 Gy〜）で現れる。"},
+{c:"医用工学",q:"サンプリング定理で正しいのはどれか。",ch:["最高周波数と等しい周波数で標本化する","最高周波数の2倍以上の周波数で標本化する","最高周波数の半分で標本化する","周波数は無関係である"],a:1,ex:"最高周波数の2倍以上でサンプリングすると原信号を再現できる。"},
+{c:"医用工学",q:"ミクロショックについて正しいのはどれか。",ch:["体表面からの感電のことである","心臓に直接流れる微小な電流でも心室細動を起こしうる","家庭用電源では起こらない","電流が大きいほど安全である"],a:1,ex:"心内電極などでは数十μA程度でも心室細動の危険がある。"},
+{c:"医用工学",q:"抵抗100 Ωの回路に10 Vの電圧を加えた。流れる電流はどれか。",ch:["0.01 A","0.1 A","1 A","10 A"],a:1,ex:"オームの法則 I＝V/R＝10/100＝0.1 A。"},
+{c:"医用工学",q:"医用電気機器の装着部の形別分類で、漏れ電流の許容値が最も厳しいのはどれか。",ch:["B形","BF形","CF形","どれも同じ"],a:2,ex:"CF形は心臓に直接適用する装着部で最も厳しい。"},
+{c:"診療画像機器学",q:"X線管のヒール効果で正しいのはどれか。",ch:["陽極側のX線強度が大きい","陰極側のX線強度が大きい","管軸方向で強度は均一である","焦点が大きいほど効果は小さい"],a:1,ex:"陽極側は自己吸収で弱くなり、陰極側が強くなる。"},
+{c:"診療画像機器学",q:"インバータ方式のX線高電圧装置の特徴はどれか。",ch:["大型で重い","高周波に変換するため小型で電圧リプルが小さい","単相全波整流より効率が悪い","撮影タイマが不要である"],a:1,ex:"インバータ方式は高周波変換で小型化と低リプルを実現。"},
+{c:"診療画像機器学",q:"磁場強度1.5 Tにおける水素原子核の共鳴周波数はおよそどれか。",ch:["21 MHz","42 MHz","64 MHz","128 MHz"],a:2,ex:"ラーモア周波数は約42.6 MHz/T、1.5 Tで約64 MHz。"},
+{c:"診療画像機器学",q:"現在のマルチスライスCTで主流の検出器はどれか。",ch:["キセノンガス検出器","シンチレータとフォトダイオードの固体検出器","イメージングプレート","フィルム"],a:1,ex:"現在はシンチレータ＋フォトダイオードの固体検出器が主流。"},
+{c:"医用画像情報学",q:"DICOMについて正しいのはどれか。",ch:["音声データの規格である","医用画像の保存と通信の標準規格である","圧縮専用の規格である","日本独自の規格である"],a:1,ex:"DICOMは医用画像と付帯情報の国際標準規格。"},
+{c:"医用画像情報学",q:"12ビットで表現できる階調数はどれか。",ch:["256","1024","4096","65536"],a:2,ex:"2の12乗＝4096階調。"},
+{c:"医用画像情報学",q:"非可逆圧縮の代表例はどれか。",ch:["ランレングス圧縮","JPEG","ハフマン圧縮","差分圧縮のみ"],a:1,ex:"JPEGは非可逆圧縮。元データに完全には戻らない。"},
+{c:"医用画像情報学",q:"PACS（医用画像管理システム）の構成に含まれないのはどれか。",ch:["画像サーバ","画像ビューワ","モダリティ","リニアック"],a:3,ex:"リニアックは放射線治療装置で、PACSの構成要素ではない。"},
+{c:"核医学検査技術学",q:"ガンマカメラの日常点検でフラッド像を用いて確認するのはどれか。",ch:["視野の均一性","患者の体位","投与量","収集時間"],a:0,ex:"均一性（フラッド）像は日常点検の基本項目。"},
+{c:"核医学検査技術学",q:"SPECT収集で空間分解能を良くする条件はどれか。",ch:["回転半径を大きくする","回転半径を小さくする","収集時間を短くする","コリメータを外す"],a:1,ex:"検出器を被写体に近づけるほど分解能は向上する。"},
+{c:"核医学検査技術学",q:"99mTcの光子エネルギーはどれか。",ch:["140 keV","364 keV","511 keV","71 keV"],a:0,ex:"99mTcは140 keVのγ線を放出する。"},
+{c:"放射線治療技術学",q:"PDD（百分率深部線量）について正しいのはどれか。",ch:["SSDが大きいほどPDDは大きくなる","エネルギーが低いほどPDDは大きくなる","照射野が小さいほどPDDは大きくなる","深さによらず一定である"],a:0,ex:"SSD増大で逆二乗の影響が相対的に減りPDDは増える。"},
+{c:"放射線治療技術学",q:"高線量率密封小線源治療に主に用いられる核種はどれか。",ch:["60Co","192Ir","137Cs","125I"],a:1,ex:"HDRには192Ir（半減期約74日）が主に用いられる。"},
+{c:"放射線治療技術学",q:"アイソドース曲線の説明はどれか。",ch:["等しい吸収線量の点を結んだ曲線","等しい放射能の点を結んだ曲線","臓器の輪郭線","ビーム軸そのもの"],a:0,ex:"アイソドース曲線は線量分布を等線量で表したもの。"},
+{c:"放射線計測学",q:"空洞電離箱の理論的基礎はどれか。",ch:["ブラッグ・グレイの空洞理論","光電効果","コンプトン散乱","サンプリング定理"],a:0,ex:"空洞理論により空洞内の電離から壁の吸収線量を求める。"},
+{c:"放射線計測学",q:"TLD（熱蛍光線量計）の原理はどれか。",ch:["加熱すると蓄積エネルギーに応じて発光する","冷却すると発光する","電圧をかけると変色する","音波に反応する"],a:0,ex:"放射線で蓄えたエネルギーが加熱で蛍光として放出される。"},
+{c:"放射線計測学",q:"個人線量計の基本的な装着部位はどれか。",ch:["頭部","体幹部","手指のみ","足首"],a:1,ex:"基本は体幹部（男子は胸部、女子は腹部）に装着する。"},
+{c:"放射線計測学",q:"空間線量率の測定に適したサーベイメータはどれか。",ch:["電離箱式","GM計数管式のみ","シンチレーション式は使えない","TLDのみ"],a:0,ex:"電離箱式はエネルギー特性が良く空間線量率測定に適する。"},
+{c:"診療画像検査学",q:"水溶性ヨード造影剤の副作用で最も重篤なのはどれか。",ch:["悪心","アナフィラキシーショック","軽い発疹","一過性の熱感"],a:1,ex:"重篤な副作用としてアナフィラキシーショックがあり、直ちに対応する。"},
+{c:"診療画像検査学",q:"MRI検査が原則として禁忌となるのはどれか。",ch:["非対応型の植込み型心臓ペースメーカ","チタン製の骨折プレート","入れ歯","コンタクトレンズ"],a:0,ex:"非対応型ペースメーカは強磁場の影響を受けるため原則禁忌。"},
+{c:"診療画像検査学",q:"超音波の周波数と画像について正しいのはどれか。",ch:["周波数が高いほど分解能は良いが減衰も大きい","周波数が高いほど深部まで届く","周波数は画像に影響しない","低いほど分解能が良い"],a:0,ex:"高周波は高分解能だが深達度が下がる。"},
+{c:"診療画像検査学",q:"胃X線検査（上部消化管造影）の前処置で正しいのはどれか。",ch:["検査前に水分を多くとる","前夜から絶食する","下剤は使わない","検査直前に食事をする"],a:1,ex:"胃内を空にするため絶食が必要。"},
+{c:"基礎医学大要",q:"心臓の刺激伝導系で興奮の開始点となるのはどれか。",ch:["房室結節","洞房結節","ヒス束","プルキンエ線維"],a:1,ex:"洞房結節が心臓のペースメーカとして働く。"},
+{c:"基礎医学大要",q:"腎臓の構造と機能の基本単位はどれか。",ch:["糸球体のみ","ネフロン","尿管","腎盂"],a:1,ex:"ネフロン（糸球体＋尿細管）が腎臓の基本単位。"},
+{c:"基礎医学大要",q:"血液凝固に必要なイオンはどれか。",ch:["ナトリウムイオン","カリウムイオン","カルシウムイオン","鉄イオン"],a:2,ex:"カルシウムイオンは凝固過程に必須。"},
+{c:"エックス線撮影技術学",q:"拡大率を大きくするにはどれか。",ch:["被写体と受像面の距離を大きくする","焦点を小さくする","撮影距離を長くする","グリッドを使う"],a:0,ex:"被写体‐受像面間距離が大きいほど像は拡大する。"},
+{c:"エックス線撮影技術学",q:"グリッド比が高いグリッドの特徴はどれか。",ch:["散乱線除去効果が高いが被ばく線量も増える","散乱線除去効果が低く線量も減る","線量は変わらない","コントラストが低下する"],a:0,ex:"高グリッド比は除去効果が高い反面、撮影線量が増える。"},
+{c:"エックス線撮影技術学",q:"マンモグラフィで乳房を圧迫する目的はどれか。",ch:["被写体厚を薄く均一にして散乱線と線量を減らす","痛みを与えるため","乳腺を広げないため","撮影時間を長くするため"],a:0,ex:"圧迫で厚さが均一になり、散乱線低減・線量低減・ぶれ防止になる。"},
+{c:"画像工学",q:"エリアシング（折り返し）アーチファクトの原因はどれか。",ch:["サンプリング周波数の不足","露出過多","焦点が大きい","フィルタの未使用"],a:0,ex:"標本化が粗いと高周波成分が低周波に化ける。"},
+{c:"画像工学",q:"平滑化フィルタ処理の効果はどれか。",ch:["ノイズは減るが空間分解能は低下する","ノイズも分解能も向上する","ノイズが増える","コントラストのみ上がる"],a:0,ex:"平滑化は高周波ノイズを除く代わりに分解能が落ちる。"},
+{c:"画像工学",q:"MTFが表すものはどれか。",ch:["ノイズの大きさ","空間周波数ごとのコントラスト伝達特性","線量の分布","階調数"],a:1,ex:"MTFは鮮鋭性（解像特性）を表す指標。"},
+{c:"画像工学",q:"画像のフーリエ変換で得られるものはどれか。",ch:["空間周波数成分","線量分布","患者情報","時間変化"],a:0,ex:"フーリエ変換は画像を周波数成分に分解する。"},
+{c:"放射線安全管理学",q:"管理区域を設定すべき場所の基準として正しいのはどれか。",ch:["外部放射線による実効線量が3月間に1.3 mSvを超えるおそれのある場所","年間1 mSvを超える場所","線量が測定できない場所","すべての撮影室"],a:0,ex:"管理区域は3月1.3 mSvを超えるおそれのある区域など。"},
+{c:"放射線安全管理学",q:"等価線量を求める式はどれか。",ch:["吸収線量×組織加重係数","吸収線量×放射線加重係数","吸収線量÷線質係数","放射能×半減期"],a:1,ex:"等価線量＝吸収線量×放射線加重係数。実効線量はさらに組織加重係数を掛ける。"},
+{c:"放射線安全管理学",q:"放射線加重係数が最も大きい放射線はどれか。",ch:["光子","電子","陽子","α粒子"],a:3,ex:"α粒子の放射線加重係数は20で最も大きい。"}
+];
+
+/* ================= 追加問題 第1弾（物理・化学・生物） ================= */
+QUESTIONS = QUESTIONS.concat([
+{c:"放射線物理学",q:"管電圧100 kV程度の診断用X線で、ターゲットに入った電子エネルギーのうちX線に変換される割合はおよそどれか。",ch:["約1％","約10％","約50％","約99％"],a:0,ex:"X線への変換効率は約1％で、残りの約99％は熱になります。だからX線管は冷却とターゲットの耐熱性が重要です。ポイント：効率は管電圧やターゲット原子番号が高いほど少し上がります。"},
+{c:"放射線物理学",q:"電子の静止エネルギーはどれか。",ch:["0.255 MeV","0.511 MeV","1.02 MeV","931 MeV"],a:1,ex:"電子の静止エネルギーは0.511 MeVです。対生成のしきい値1.02 MeVは「電子＋陽電子」2個分の静止エネルギーに相当します。"},
+{c:"放射線物理学",q:"対生成が起こるために必要な光子エネルギーの最小値はどれか。",ch:["0.511 MeV","1.02 MeV","1.33 MeV","2.04 MeV"],a:1,ex:"対生成は電子と陽電子を1個ずつ作るため、最低でも0.511×2＝1.02 MeVが必要です。原子核の近くで起こり、余ったエネルギーは2粒子の運動エネルギーになります。"},
+{c:"放射線物理学",q:"コンプトン散乱で波長の変化量が最大になる散乱角はどれか。",ch:["0度","45度","90度","180度"],a:3,ex:"コンプトンシフトは（1−cosθ）に比例し、180度の後方散乱で最大になります。その値は約0.00486 nmです。散乱X線のエネルギーが最も小さくなるのも180度です。"},
+{c:"放射線物理学",q:"1 eVのエネルギーをジュールに換算した値はどれか。",ch:["1.602×10^-19 J","1.602×10^-16 J","6.02×10^-23 J","9.11×10^-31 J"],a:0,ex:"1 eV＝1.602×10^-19 Jです。素電荷 e に1 Vの電位差で得るエネルギーが定義です。keV・MeVへの換算問題でよく使います。"},
+{c:"放射線物理学",q:"光子の運動量 p とエネルギー E の関係はどれか。",ch:["p＝E×c","p＝E／c","p＝E^2／c","pはエネルギーによらない"],a:1,ex:"光子は p＝E/c＝h/λ で表されます。エネルギーが大きい（波長が短い）光子ほど運動量が大きくなります。"},
+{c:"放射線物理学",q:"中性子の特徴として正しいのはどれか。",ch:["電荷をもち直接電離する","電荷をもたず間接電離放射線である","質量がない","電磁波の一種である"],a:1,ex:"中性子は電荷をもたないため物質を直接電離できず、原子核との衝突や核反応で生じた二次粒子が電離を起こす間接電離放射線です。遮へいには水素を多く含む物質が有効です。"},
+{c:"放射線物理学",q:"カーマ（Kerma）の説明で正しいのはどれか。",ch:["単位体積あたりの放射能である","光子が単位質量あたりに生成した荷電粒子へ与えた初期運動エネルギーの総和である","組織の等価線量である","検出器の計数率である"],a:1,ex:"カーマは間接電離放射線（光子・中性子）が物質中で生じさせた荷電粒子の初期運動エネルギーの総和を質量で割った量で、単位はGyです。吸収線量とは「どこでエネルギーが吸収されたか」が違います。"},
+{c:"放射線物理学",q:"特性X線と制動X線の違いで正しいのはどれか。",ch:["特性X線は連続スペクトルである","制動X線は線スペクトルである","特性X線は元素固有のエネルギーで線スペクトルになる","どちらも同じスペクトルである"],a:2,ex:"特性X線は内殻の空位へ外殻電子が遷移するときに出るため、元素固有の決まったエネルギー（線スペクトル）です。電子が原子核の近くで急に曲げられて出る制動X線は連続スペクトルになります。"},
+{c:"放射化学",q:"β−壊変で原子番号と質量数はどうなるか。",ch:["原子番号＋1、質量数不変","原子番号−1、質量数不変","原子番号不変、質量数−4","原子番号−2、質量数−4"],a:0,ex:"β−壊変では核内の中性子1個が陽子に変わるため、原子番号は1増え、質量数は変わりません。同時に反ニュートリノも放出されます。β＋壊変と逆向きに覚えましょう。"},
+{c:"放射化学",q:"軌道電子捕獲（EC）で放出されやすいのはどれか。",ch:["β線","α線","特性X線","中性子"],a:2,ex:"ECでは核が軌道電子を取り込み、空いた内殻へ外殻電子が落ちるため特性X線（またはオージェ電子）が出ます。原子番号は1減り、質量数は変わりません。"},
+{c:"放射化学",q:"核異性体転移（IT）の特徴はどれか。",ch:["原子番号が1増える","質量数が4減る","励起状態の核がγ線を放出して安定化し、原子番号・質量数は変わらない","陽電子を放出する"],a:2,ex:"ITは励起状態（核異性体）がγ線を放出して基底状態に戻る現象で、原子番号も質量数も変わりません。99mTcのmは核異性体を意味し、ITで140 keVのγ線を出します。"},
+{c:"放射化学",q:"99Moの物理的半減期はどれか。",ch:["6時間","66時間","8日","271日"],a:1,ex:"99Moの半減期は約66時間、娘核種99mTcは約6時間です。この半減期の組合せで過渡平衡が成り立ち、ジェネレータとして繰り返しミルキングできます。"},
+{c:"放射化学",q:"131Iが放出する主なγ線エネルギーはどれか。",ch:["140 keV","364 keV","511 keV","662 keV"],a:1,ex:"131Iの主なγ線は364 keVなので、中〜高エネルギ用コリメータを使います。同時にβ線も放出するため、甲状腺治療にも用いられます。99mTcの140 keVと混同しないようにしましょう。"},
+{c:"放射化学",q:"無担体（キャリアフリー）の放射性核種について正しいのはどれか。",ch:["比放射能が低い","比放射能が高い","放射能がない","安定同位体が大量に混ざっている"],a:1,ex:"無担体は安定同位体などの担体がほとんど含まれない状態で、単位質量あたりの放射能＝比放射能が高くなります。受容体イメージングなど、微量で効果が変わる検査で有利です。"},
+{c:"放射化学",q:"99Mo−99mTcジェネレータから99mTcを溶出する液はどれか。",ch:["蒸留水","生理食塩液","ブドウ糖液","エタノール"],a:1,ex:"ミルキングには生理食塩液（0.9％ NaCl）を用い、99mTcO4−（パーテクネテイト）として溶出します。溶出後は放射能測定とアルミニウムなどの品質確認を行ってから標識に使います。"},
+{c:"放射線生物学",q:"低LET放射線の生物作用で、間接作用が占める割合はおよそどれか。",ch:["約1/3","約2/3","ほぼ100％","ほぼ0％"],a:1,ex:"低LET放射線では、水の放射線分解でできたフリーラジカルによる間接作用が約2/3を占めるといわれます。高LET放射線では直接作用の割合が増えます。"},
+{c:"放射線生物学",q:"放射線による皮膚の早期反応で、紅斑が現れるしきい線量に最も近いのはどれか。",ch:["0.5 Gy","3 Gy","10 Gy","30 Gy"],a:1,ex:"一過性の早期紅斑は約2〜3 Gyからみられます。確定的影響なので線量が上がるほど重篤度が増し、脱毛は約3 Gy、湿性落屑はさらに高線量で起こります。"},
+{c:"放射線生物学",q:"妊娠中の放射線影響で、器官形成期（受精後3〜8週）の被ばくで最も注意すべき影響はどれか。",ch:["流産のみ","奇形（形態異常）","白内障","皮膚紅斑"],a:1,ex:"器官形成期は器官のもとが作られる時期で、奇形のリスクが問題になります。着床前期は「全か無か（流産か正常発育）」、胎児期は主に精神発達への影響が中心です。時期と影響の対応が頻出です。"},
+{c:"放射線生物学",q:"がんや遺伝的影響のような確率的影響の特徴はどれか。",ch:["しきい線量があり、重篤度が線量で増す","しきい線量はないと仮定され、発生確率が線量で増すが重篤度は変わらない","低線量では絶対に起こらない","発生確率は線量と無関係である"],a:1,ex:"確率的影響はしきい線量なし（LNT仮説）で考え、線量とともに発生確率が上がりますが、起きた場合の重篤度は線量によらず一定です。確定的影響との対比で覚えましょう。"},
+{c:"放射線生物学",q:"分割照射で正常組織が守られる理由（4つのR）に含まれないのはどれか。",ch:["亜致死障害の回復（Repair）","再酸素化（Reoxygenation）","再分布（Redistribution）","再吸収（Reabsorption）"],a:3,ex:"4つのRは回復・再増殖（Repopulation）・再分布・再酸素化です。再吸収は含まれません。分割により正常組織が回復し、腫瘍では再酸素化で感受性が戻ることが治療比を高めます。"},
+{c:"放射線生物学",q:"細胞周期で放射線抵抗性が最も高い時期はどれか。",ch:["M期","G2期","S期後半","G1期前半"],a:2,ex:"最も感受性が高いのはM期〜G2期、最も抵抗性なのはS期後半です。分割照射では細胞が周期を進み、感受性の高い時期に再分布することも効果の一つです。"},
+{c:"放射線生物学",q:"放射線感受性が最も高い正常組織・細胞はどれか。",ch:["神経細胞","筋細胞","骨髄の造血幹細胞・リンパ球","軟骨細胞"],a:2,ex:"ベルゴニー・トリボンドーの法則どおり、分裂が盛んで未分化な造血組織やリンパ球、生殖腺、腸管上皮は感受性が高く、分裂しない神経・筋は低感受性です。リンパ球は照射後早期に減少することでも知られます。"}
+]);
+
+/* ================= 追加問題 第2弾（工学・機器・情報） ================= */
+QUESTIONS = QUESTIONS.concat([
+{c:"医用工学",q:"コンデンサを並列に接続したときの合成静電容量はどうなるか。",ch:["各容量の和になる","各容量の逆数の和の逆数になる","最も小さい容量に等しくなる","変わらない"],a:0,ex:"並列接続では合成容量は単純な和 C＝C1＋C2 になります。直列接続では逆数の和の逆数になり、合成容量は一番小さいものより小さくなります。抵抗の直列・並列と逆の関係なので注意しましょう。"},
+{c:"医用工学",q:"正弦波交流の平均値を表す実効値について正しいのはどれか。",ch:["最大値の約0.637倍","最大値の約0.707倍","最大値の約1.11倍","最大値と等しい"],a:1,ex:"正弦波の実効値は最大値×1/√2≒0.707倍、平均値は最大値×2/π≒0.637倍です。家庭用100 Vは実効値で、最大値は約141 Vになります。"},
+{c:"医用工学",q:"p形半導体で多数キャリアとなるのはどれか。",ch:["自由電子","正孔（ホール）","陽子","イオン"],a:1,ex:"p形半導体は3価の元素を加えて正孔が多数キャリア、n形半導体は5価の元素を加えて自由電子が多数キャリアです。pn接合がダイオードやトランジスタの基本になります。"},
+{c:"医用工学",q:"ダイオードの主な働きはどれか。",ch:["交流を増幅する","電流を一方向だけに流す（整流）","電圧を蓄える","周波数を変える"],a:1,ex:"ダイオードは順方向にだけ電流を流す整流作用をもちます。X線高電圧装置の整流回路にも使われます。増幅はトランジスタ、蓄電はコンデンサの役割です。"},
+{c:"医用工学",q:"理想的なオペアンプ（演算増幅器）の特徴はどれか。",ch:["入力インピーダンスが低く、増幅度が小さい","入力インピーダンスが非常に高く、増幅度が非常に大きい","出力インピーダンスが非常に高い","電源が不要である"],a:1,ex:"オペアンプは高入力インピーダンス・低出力インピーダンス・大きな電圧増幅度が特徴です。生体信号の増幅など医用計測の基本素子です。"},
+{c:"医用工学",q:"論理回路で、入力のどちらか一方でも1なら出力が1になる回路はどれか。",ch:["AND回路","OR回路","NOT回路","NAND回路"],a:1,ex:"OR回路は「少なくとも一方が1なら1」、AND回路は「両方1のときだけ1」です。NOTは反転、NANDはANDの否定出力です。真理値表とセットで覚えましょう。"},
+{c:"医用工学",q:"変圧器（トランス）で、一次コイルの巻数が200回、二次コイルが1000回のとき、一次に100 Vを加えると二次電圧はどれか。",ch:["20 V","100 V","500 V","1000 V"],a:2,ex:"電圧比は巻数比に等しく、V2＝100×(1000/200)＝500 Vです。X線装置の高電圧変圧器もこの原理で昇圧します。電力保存のため電流は逆比で小さくなります。"},
+{c:"医用工学",q:"電磁波の波長が0.3 mのとき、周波数はおよそどれか。ただし光速は3×10^8 m/sとする。",ch:["100 MHz","1 GHz","10 GHz","90 MHz"],a:1,ex:"c＝fλ より f＝c/λ＝3×10^8/0.3＝1×10^9 Hz＝1 GHzです。MRIの共鳴周波数（1.5 Tで約64 MHz）との桁の違いも意識しておきましょう。"},
+{c:"医用工学",q:"マクロショックとミクロショックの違いで正しいのはどれか。",ch:["ミクロショックは体表面からの大きな電流による","マクロショックは心臓に直接流れる微小電流による","ミクロショックは心臓に直接流れる微小電流でも心室細動を起こしうる","どちらも危険性はない"],a:2,ex:"通常の体表面感電がマクロショックで、心室細動には約100 mA程度が必要です。一方、カテーテルなどで心臓に直接電流が流れるミクロショックは数十μAでも危険なため、CF形装着部が求められます。"},
+{c:"医用工学",q:"保護接地を備えた医用電気機器のクラス分類はどれか。",ch:["クラスI機器","クラスII機器","内部電源機器","クラスIII機器"],a:0,ex:"クラスI機器は基礎絶縁に加えて保護接地で安全を確保する機器です。クラスII機器は二重絶縁・強化絶縁で接地に頼らず、内部電源機器は電池などで動作します。"},
+{c:"医用工学",q:"交流回路でコイル（インダクタ）のリアクタンスについて正しいのはどれか。",ch:["周波数が高いほど小さい","周波数が高いほど大きい","直流では無限大になる","抵抗と無関係に一定である"],a:1,ex:"誘導性リアクタンス XL＝2πfL で、周波数とインダクタンスに比例します。直流（f＝0)では0になり、コンデンサの容量性リアクタンス XC＝1/(2πfC) とは逆の振る舞いです。"},
+{c:"診療画像機器学",q:"X線管の実効焦点が実際の焦点（実焦点）より小さくなる原理はどれか。",ch:["ヒール効果","ライン・フォーカス原理（斜角効果）","コンプトン効果","光電効果"],a:1,ex:"ターゲットに角度をつけることで、X線の取り出し方向から見た焦点（実効焦点）は実焦点より小さくなります。これにより耐熱性（大きな実焦点）と鮮鋭度（小さな実効焦点）を両立させます。ターゲット角度が小さいほど実効焦点は小さくなります。"},
+{c:"診療画像機器学",q:"CTでみられるビームハードニングアーチファクトの原因はどれか。",ch:["検出器の感度低下","多色X線が物質を通過するうちに低エネルギー成分が減り線質が硬化すること","患者の体動","造影剤の不足"],a:1,ex:"診断用X線は多色（連続スペクトル）で、通過中に低エネルギー光子が優先的に吸収されて平均エネルギーが上がります。これがカップリングやストリークの原因となり、補正処理やフィルタで対策します。"},
+{c:"診療画像機器学",q:"MRIのT1回復とT2減衰について正しいのはどれか。",ch:["T1は横緩和、T2は縦緩和である","T1は縦緩和（スピン-格子緩和）、T2は横緩和（スピン-スピン緩和）である","T1とT2は同じ現象である","T2は常にT1より長い"],a:1,ex:"T1は励起された磁化が縦方向に回復する縦緩和、T2は横磁化が位相のばらつきで減衰する横緩和です。一般にT2≦T1で、組織ごとに固有の値をもつことがコントラストの源になります。"},
+{c:"診療画像機器学",q:"MRIの傾斜磁場コイルの役割として正しいのはどれか。",ch:["静磁場を作る","位置情報を周波数や位相に符号化する（スライス選択・位相エンコード・周波数エンコード）","高周波パルスを送信する","信号を受信する専用コイルである"],a:1,ex:"傾斜磁場は場所ごとに磁場強度を変え、共鳴周波数や位相に位置情報を与えます。スライス選択、位相エンコード、周波数エンコードの3方向に使われ、スルーレートが性能指標です。"},
+{c:"診療画像機器学",q:"超音波診断装置の探触子（プローブ）が送受信に利用する現象はどれか。",ch:["圧電効果","光電効果","ホール効果","ゼーマン効果"],a:0,ex:"探触子の圧電素子（PZTなど）は、電圧を加えると振動して超音波を出し、戻ってきた超音波を受けると電圧を発生します。送信と受信を同じ素子で行うのがパルスエコー法の基本です。"},
+{c:"診療画像機器学",q:"直接変換方式のFPD（フラットパネル検出器）に用いられる変換物質はどれか。",ch:["CsI(Tl)","a-Se（アモルファスセレン）","BaFBr:Eu","NaI(Tl)"],a:1,ex:"直接変換方式はa-SeにX線が当たって直接電荷を発生させます。間接変換方式はCsIなどのシンチレータで一度光に変えてからフォトダイオードで読み取ります。変換方式と材料の組合せが頻出です。"},
+{c:"診療画像機器学",q:"マンモグラフィでMoターゲットから出る特性X線のエネルギーはおよそどれか。",ch:["8 keV","17.5 keV","32 keV","69 keV"],a:1,ex:"MoのKα特性X線は約17.5 keVで、乳房のような軟部組織の撮影に適した低エネルギーです。Mo/Moの組合せが代表的で、高濃度病変にはRhターゲットなどが使われます。"},
+{c:"診療画像機器学",q:"DSA（デジタルサブトラクション血管造影）の原理はどれか。",ch:["造影前後の画像を引き算して血管だけを強調する","2方向から同時に撮影する","造影剤を2倍に増やす","フィルムを重ねて観察する"],a:0,ex:"DSAは造影前のマスク像と造影後の像の差分を取ることで、骨や軟部組織を消して血管だけを浮かび上がらせます。体動があるとミスレジストレーションアーチファクトが出るのが弱点です。"},
+{c:"診療画像機器学",q:"増感紙-フィルム系と比較したCR（コンピューテッドラジオグラフィ）の特徴はどれか。",ch:["イメージングプレートに潜像を作り、レーザ走査で読み取る","信号はその場で電気信号になる","ダイナミックレンジが狭い","現像液が必要である"],a:0,ex:"CRは輝尽性蛍光体（BaFBr:Euなど）のIPに潜像を記録し、赤色レーザで励起して発光を読み取ります。ダイナミックレンジが広く、後処理ができるのが利点です。"},
+{c:"医用画像情報学",q:"1024×1024画素、8ビット（1バイト）の白黒画像1枚のデータ量はおよそどれか。",ch:["約100 kB","約1 MB","約10 MB","約1 GB"],a:1,ex:"1024×1024＝約100万画素で、1画素1バイトなら約1 MBです。階調ビット数やマトリクスサイズが増えるとデータ量は比例して増えます。CTやマンモの容量見積もりの基本計算です。"},
+{c:"医用画像情報学",q:"RIS（放射線部門情報システム）の主な役割はどれか。",ch:["画像の保存と配信","検査予約・受付・実施管理など放射線部門の業務管理","病院全体の会計処理","電子カルテの診療記録そのもの"],a:1,ex:"RISは放射線部門の予約・受付・検査実施情報などを管理するシステムです。画像の保存・管理はPACS、病院全体のオーダはHIS（病院情報システム）が担います。3者の役割分担が頻出です。"},
+{c:"医用画像情報学",q:"CT画像のウィンドウ操作について正しいのはどれか。",ch:["ウィンドウ幅を狭くするとコントラストは高くなる","ウィンドウ幅を広くするとコントラストは高くなる","ウィンドウレベルは表示範囲の幅を決める","ウィンドウ操作で元のCT値は変わる"],a:0,ex:"ウィンドウ幅（WW）は表示するCT値の範囲で、狭いほどコントラストが高く、広いほど多くの濃度を含む表示になります。ウィンドウレベル（WL）はその範囲の中心値です。元のデータは変わらず、表示だけが変わります。"},
+{c:"医用画像情報学",q:"画像処理でエッジ（輪郭）を強調するために強調する成分はどれか。",ch:["低周波成分","高周波成分","直流成分","色成分"],a:1,ex:"輪郭や細部は高周波成分に含まれるため、エッジ強調では高周波を強めます。逆に平滑化（スムージング）は高周波を抑えてノイズは減りますが、分解能は低下します。"},
+{c:"医用画像情報学",q:"標本化（サンプリング）と量子化の違いで正しいのはどれか。",ch:["標本化は濃度を離散値にすること","量子化は位置を離散化すること","標本化は空間・時間の離散化、量子化は信号の大きさの離散化","どちらも同じ操作である"],a:1,ex:"アナログ信号のデジタル化は、標本化（どこを測るか）と量子化（値を何段階で表すか）の2段階です。量子化ビット数が階調数を決め、12ビットなら4096階調になります。"},
+{c:"医用画像情報学",q:"医用画像表示用モニタで重視される階調特性（グレースケール標準表示関数）はどれか。",ch:["sRGB","GSDF（DICOM Part 14）","ガンマ2.2固定","Rec.709"],a:1,ex:"医用モニタはDICOM Part 14のGSDFに沿って、人間の視覚特性に合った階調再現が求められます。高輝度・高精細（マンモ用5メガピクセルなど）とともに品質管理の対象です。"},
+{c:"医用画像情報学",q:"病院の情報システム間で医療情報を交換するための標準規格はどれか。",ch:["DICOMのみ","HL7","JPEG","MP3"],a:1,ex:"HL7は患者情報や検査オーダなど医療情報交換の標準規格です。画像の保存・通信はDICOM、という使い分けが基本です。近年はFHIRも広がっています。"},
+{c:"医用画像情報学",q:"可逆圧縮と非可逆圧縮について正しいのはどれか。",ch:["JPEG（通常法）は可逆圧縮である","可逆圧縮では圧縮前のデータを完全に復元できる","非可逆圧縮の方が圧縮率は低い","可逆圧縮では画質が必ず劣化する"],a:1,ex:"可逆（ロスレス）圧縮は完全に元へ戻せますが圧縮率は低めです。非可逆（ロッシー）圧縮は高圧縮ですが元には戻りません。診断画像の保存では可逆が原則とされます。"},
+{c:"医用画像情報学",q:"TCP/IPネットワークで、IPアドレスを自動で割り当てる仕組みはどれか。",ch:["DNS","DHCP","FTP","SMTP"],a:1,ex:"DHCPは端末にIPアドレスを自動配布する仕組みです。DNSはドメイン名とIPアドレスの変換、FTPはファイル転送、SMTPはメール送信のプロトコルです。"},
+{c:"医用画像情報学",q:"画像のサンプリングピッチを小さく（細かく）したときの効果はどれか。",ch:["空間分解能は下がる","空間分解能は上がるがデータ量も増える","階調数が増える","ノイズだけが減る"],a:1,ex:"ピッチが細かいほど細部まで記録でき、ナイキスト周波数＝1/(2×ピッチ）も高くなります。その分データ量は増えます。階調数は量子化ビット数で決まります。"},
+{c:"医用画像情報学",q:"患者取り違え防止のために検査実施時に照合する情報として最も基本的な組合せはどれか。",ch:["住所と電話番号","患者氏名と患者ID（または生年月日）","血液型と身長","担当医名と病棟名"],a:1,ex:"検査前の患者確認は氏名とID・生年月日などの2点照合が基本です。モダリティワークリスト（MWL）でオーダ情報を取得すると、手入力ミスによる取り違えや情報不一致を防げます。"}
+]);
+
+/* ================= 追加問題 第3弾（核医学・治療・計測・検査） ================= */
+QUESTIONS = QUESTIONS.concat([
+{c:"核医学検査技術学",q:"18F-FDG PET検査について正しいのはどれか。",ch:["18Fの半減期は約6時間である","消滅放射線511 keVを同時計数で検出する","脳では全く集積しない","血糖値の影響を受けない"],a:1,ex:"陽電子放出核種は消滅放射線511 keVのペアを180度方向に放出し、PETはこれを同時計数します。18Fの半減期は約110分です。FDGはブドウ糖代謝を反映し、高血糖や食後では腫瘍集積が下がるため空腹で検査します。"},
+{c:"核医学検査技術学",q:"脳血流シンチグラフィに用いる放射性医薬品はどれか。",ch:["99mTc-MAA","123I-IMP","99mTc-PMT","131I-アドステロール"],a:1,ex:"脳血流製剤は123I-IMP、99mTc-ECD、99mTc-HM-PAOで、血液脳関門を通過して血流に応じて初回循環で脳に固定されます。201Tlが正常脳に集積しないのと対比して覚えましょう。"},
+{c:"核医学検査技術学",q:"心筋血流シンチグラフィで、201Tlの再分布（リディストリビューション）がみられるのはどれか。",ch:["心筋梗塞の固定性欠損","虚血心筋で遅延像の欠損が改善する現象","肝臓への集積増加","腎排泄の遅延"],a:1,ex:"201Tlは負荷時の欠損が数時間後の遅延像で改善すれば虚血、変わらなければ梗塞（瘢痕）と判断します。この再分布が201Tlの特徴で、99mTc-MIBIには再分布がほとんどありません。"},
+{c:"核医学検査技術学",q:"甲状腺シンチグラフィと摂取率測定に主に用いる核種はどれか。",ch:["99mTc-MAA","123I","201Tl","67Ga"],a:1,ex:"甲状腺には123I（半減期約13時間、159 keV）が摂取率測定とシンチグラフィに適します。99mTc-パーテクネテイトも唾液腺や甲状腺のイメージングに使われますが、摂取率の評価は123Iが標準です。"},
+{c:"放射線治療技術学",q:"X線（光子線）治療で皮膚温存効果（スキンスペアリング）が生じる理由はどれか。",ch:["皮膚で光子が全て吸収されるため","二次電子の到達で線量が深部で最大になるビルドアップがあるため","皮膚の感受性が低いため","コリメータで皮膚が遮へいされるため"],a:1,ex:"高エネルギー光子線は表面では線量が低く、二次電子が平衡に達する深さ（dmax）で最大になるビルドアップ現象があります。これにより皮膚線量を下げつつ深部腫瘍に線量を届けられます。電子線にはこの効果がほとんどありません。"},
+{c:"放射線治療技術学",q:"DVH（線量体積ヒストグラム）で分かることはどれか。",ch:["腫瘍の病理組織型","ある線量を受ける標的や臓器の体積の割合","患者の体重変化","ビームのエネルギー"],a:1,ex:"DVHはPTVやリスク臓器について「何Gy以上を何％の体積が受けたか」を表し、治療計画の評価に使います。空間的な位置情報は分からないため、線量分布図と合わせて確認します。"},
+{c:"放射線治療技術学",q:"IMRT（強度変調放射線治療）の特徴はどれか。",ch:["ビーム強度を一様にして照射する","MLCでビーム内の強度に分布をつけ、凹型など複雑な線量分布を作れる","電子線専用の治療法である","1回で必ず治療が終わる"],a:1,ex:"IMRTはマルチリーフコリメータで照射野内の強度を変調し、脊髄などのリスク臓器を避けながら腫瘍に沿った線量分布を作ります。計画は逆方向計画（インバースプランニング）で最適化するのが特徴です。"},
+{c:"放射線治療技術学",q:"定位放射線治療（SRS・SRT）について正しいのはどれか。",ch:["大きな照射野で広範囲を治療する","小さな病変に多方向から集中して高線量を照射する","線量は周囲組織と同じになる","固定具は不要である"],a:1,ex:"定位放射線治療は小病変に多門・回転照射で線量を集中させる高精度治療です。頭蓋内ではガンマナイフやリニアックが用いられ、ミリ単位の固定と位置精度が求められます。"},
+{c:"放射線治療技術学",q:"前立腺癌の永久挿入密封小線源治療に用いる核種はどれか。",ch:["192Ir","125I","60Co","137Cs"],a:1,ex:"125Iシード（半減期約60日）を前立腺内に永久挿入します。192Irは高線量率の一時挿入（RALSなど）に使う核種で、半減期約74日です。核種と使い方の組合せが頻出です。"},
+{c:"放射線治療技術学",q:"放射線治療で脊髄の耐容線量（通常分割）の目安はどれか。",ch:["約10 Gy","約20 Gy","約45〜50 Gy","約80 Gy"],a:2,ex:"脊髄は直列臓器で、通常分割での耐容線量は約45〜50 Gyが目安とされ、超えると放射線脊髄症のリスクが上がります。リスク臓器の耐容線量は計画時の線量制約として重要です。"},
+{c:"放射線計測学",q:"GM計数管のプラトー領域で正しいのはどれか。",ch:["電圧を上げても計数率がほとんど変わらない領域である","電圧を上げると計数率が急に下がる領域である","放射線が検出できない領域である","比例計数管だけの現象である"],a:0,ex:"プラトーは印加電圧を変えても計数率がほぼ一定になる領域で、この範囲で測定すると電圧変動の影響を受けにくくなります。プラトー長と傾斜がGM管の性能指標です。"},
+{c:"放射線計測学",q:"GM計数管の不感時間（分解時間）の影響はどれか。",ch:["低計数率で数え落としが増える","高計数率で数え落とし（計数損失）が増える","エネルギー分解能が良くなる","バックグラウンドが消える"],a:1,ex:"放射線が入ってから一定時間は次のパルスを数えられない不感時間があるため、高計数率ほど数え落としが増えます。測定値を真の計数率に補正する際に必要です。"},
+{c:"放射線計測学",q:"γ線のエネルギー分解能が最も良い検出器はどれか。",ch:["GM計数管","NaI(Tl)シンチレーション検出器","Ge半導体検出器","電離箱"],a:2,ex:"半導体検出器は1イオン対あたりの生成エネルギーが小さく統計が良いため、エネルギー分解能が最も優れます。Ge検出器は液体窒素冷却が必要です。NaI(Tl)は効率は良いですが分解能は半導体に劣ります。"},
+{c:"放射線計測学",q:"熱中性子の検出に用いられる検出器はどれか。",ch:["BF3比例計数管","NaI(Tl)検出器のみ","TLDのみ","自由空気電離箱"],a:0,ex:"BF3や3Heの比例計数管は、10B(n,α)7Li や 3He(n,p)3H 反応で生じる荷電粒子を検出します。中性子自体は電荷をもたないため、核反応を利用するのがポイントです。"},
+{c:"放射線計測学",q:"OSL線量計の原理はどれか。",ch:["加熱すると発光する","光を当てると蓄積エネルギーに応じて発光する（光刺激ルミネッセンス）","電圧で色が変わる","音に反応して発光する"],a:1,ex:"OSLはAl2O3:Cなどに蓄えられたエネルギーを励起光で読み出す方式で、個人線量測定に広く使われます。加熱で読み出すのはTLD、フィルムの黒化を使うのがフィルムバッジです。"},
+{c:"放射線計測学",q:"放射線の計数測定で、計数値Nの統計誤差（標準偏差）はどれか。",ch:["N","√N","N^2","1/N"],a:1,ex:"放射性壊変はポアソン分布に従い、標準偏差は√N、相対誤差は1/√Nです。長く測ってNを増やすほど精度が上がります。バックグラウンドの差し引きでも誤差は伝播します。"},
+{c:"放射線計測学",q:"空気カーマの一次標準測定に用いられるのはどれか。",ch:["自由空気電離箱","GMサーベイメータ","ポケット線量計","フィルムバッジ"],a:0,ex:"自由空気電離箱は定義どおりに空気カーマを絶対測定できる一次標準器です。現場の線量計は二次標準器との比較校正でトレーサビリティを確保します。"},
+{c:"放射線計測学",q:"β線の表面汚染測定に適したサーベイメータはどれか。",ch:["電離箱式のみ","入射窓の薄いGM計数管式","NaIシンチレーション式のみで窓なし","TLD"],a:1,ex:"β線は飛程が短いため、薄い入射窓（マイラ窓など）のGM管やプラスチックシンチレータで近づけて測ります。α線も同様に窓の薄さと距離が重要です。空間線量率には電離箱式が適します。"},
+{c:"放射線計測学",q:"検出器のエネルギー特性（エネルギー依存性）が最も良い空間線量率計はどれか。",ch:["GM計数管式","電離箱式","フィルムバッジ","ポケット線量計"],a:1,ex:"電離箱式はエネルギー特性が平坦で、空間線量率の測定に適します。GM式は低エネルギーで感度が上がるなどエネルギー依存性が大きく、補償フィルタで改善します。"},
+{c:"放射線計測学",q:"蛍光ガラス線量計の読み取りに用いるのはどれか。",ch:["加熱","紫外線励起による蛍光（ラジオフォトルミネッセンス）","赤外線","超音波"],a:1,ex:"銀活性化リン酸塩ガラスは放射線でできた蛍光中心が、紫外線励起で橙色の蛍光を出します。読み取り後も情報が消えない（再読可能）のがTLDとの違いです。"},
+{c:"診療画像検査学",q:"静脈内ヨード造影剤を使うCTで、腎機能の指標として確認するのはどれか。",ch:["血小板数","eGFR（推算糸球体濾過量）・血清クレアチニン","血糖値のみ","白血球数"],a:1,ex:"造影剤腎症のリスク評価にはeGFRや血清クレアチニンを使います。糖尿病薬メトホルミン服用時は、腎機能に応じて休薬の判断が必要なことも頻出ポイントです。"},
+{c:"診療画像検査学",q:"MRI用ガドリニウム造影剤で、重度腎機能障害の患者で注意すべき合併症はどれか。",ch:["造影剤腎症のみ","腎性全身性線維症（NSF）","アナフィラキシーのみ","肺水腫のみ"],a:1,ex:"NSFは重度腎障害患者でガドリニウム造影剤使用後に起こりうる重い合併症で、皮膚や全身の線維化を来します。そのため投与前に腎機能（eGFR)を確認し、製剤の種類や用量に注意します。"},
+{c:"診療画像検査学",q:"セルジンガー（Seldinger）法の説明はどれか。",ch:["血管を直接切開してカテーテルを入れる方法","針で穿刺しガイドワイヤを介してカテーテルを挿入する方法","造影剤を飲んで撮影する方法","内視鏡で血管を見る方法"],a:1,ex:"セルジンガー法は穿刺針→ガイドワイヤ→カテーテル（またはシース）の順で血管内にアクセスする標準手技です。血管造影やIVRの基本になります。"},
+{c:"診療画像検査学",q:"超音波ドプラ法で血流情報が得られる原理はどれか。",ch:["音響インピーダンスの差","ドプラ効果による周波数の変化","圧電効果のみ","音の回折のみ"],a:1,ex:"動いている血液（赤血球）に超音波を当てると、反射波の周波数がドプラ効果でずれます。この偏移から血流の向きと速度が分かります。プローブに近づく流れと遠ざかる流れで色付け表示します。"},
+{c:"診療画像検査学",q:"二重エネルギーX線吸収測定法（DXA/DEXA）の用途はどれか。",ch:["脳血流の測定","骨密度（骨塩量）の測定","心電図の記録","肺機能の測定"],a:1,ex:"DXAは2種類のエネルギーX線の吸収差から骨密度を測る標準法で、腰椎や大腿骨近位部を測定します。骨粗鬆症の診断や経過観察に用いられます。"},
+{c:"診療画像検査学",q:"消化管穿孔が疑われる場合の造影剤の選択で正しいのはどれか。",ch:["硫酸バリウムを使う","水溶性ヨード造影剤（ガストログラフィンなど）を使う","造影剤は使ってはいけない","空気を大量に注入する"],a:1,ex:"バリウムが腹腔内に漏れると重い腹膜炎の原因になるため、穿孔が疑われる場合は水溶性ヨード造影剤を使います。バリウム検査の禁忌として頻出です。"},
+{c:"診療画像検査学",q:"デジタルブレストトモシンセシス（DBT）の特徴はどれか。",ch:["1方向の撮影のみで立体像が得られる","複数の角度から撮影して断層像を再構成し、組織の重なりを減らす","MRIの一種である","超音波で断層像を作る"],a:1,ex:"DBTはX線管を振りながら低線量撮影を繰り返し、任意の断面を再構成するマンモグラフィの発展形です。乳腺組織の重なりによる偽陰性・偽陽性を減らす効果があります。"},
+{c:"診療画像検査学",q:"IVR（インターベンショナルラジオロジー）施行時の術者被ばく低減で有効なのはどれか。",ch:["透視時間を長くする","パルス透視の使用、防護衣・防護眼鏡の着用、線源から距離をとる","拡大透視を常時使う","防護具は着けない"],a:1,ex:"IVRは術者の被ばくが問題になるため、パルス透視や低フレームレート、防護メガネを含む個人防護具、天井吊り防護板などを組み合わせます。水晶体線量の管理も重要です。"}
+]);
+
+/* ================= 追加問題 第4弾（基礎・撮影・画像工学・安全） ================= */
+QUESTIONS = QUESTIONS.concat([
+{c:"基礎医学大要",q:"肝臓について正しいのはどれか。",ch:["人体で最も小さい臓器である","胆汁を生成し、グリコーゲンを貯蔵する","インスリンを分泌する","尿を生成する"],a:1,ex:"肝臓は人体最大の実質臓器で、胆汁の生成、糖・脂質代謝、解毒、アルブミンや凝固因子の合成など多彩な働きをします。胆汁を貯蔵・濃縮するのは胆嚢で、生成は肝臓です。"},
+{c:"基礎医学大要",q:"肺の葉の数で正しいのはどれか。",ch:["右2葉・左3葉","右3葉・左2葉","左右とも2葉","左右とも3葉"],a:1,ex:"右肺は上・中・下の3葉、左肺は心臓があるため上・下の2葉（舌区を含む）です。右主気管支は左より太く短く急角度なので、誤嚥は右肺に多いことも関連知識です。"},
+{c:"基礎医学大要",q:"赤血球の寿命はおよそどれか。",ch:["約10日","約30日","約120日","約1年"],a:2,ex:"赤血球の寿命は約120日で、寿命を終えると脾臓などで壊されます。血小板は約10日、白血球は種類により大きく異なります。寿命の数字の入れ替え問題に注意しましょう。"},
+{c:"基礎医学大要",q:"下垂体前葉から分泌されるホルモンはどれか。",ch:["インスリン","成長ホルモン（GH）・甲状腺刺激ホルモン（TSH）","アドレナリン","メラトニン"],a:1,ex:"下垂体前葉からはGH、TSH、ACTH、LH、FSH、プロラクチンが分泌されます。アドレナリンは副腎髄質、メラトニンは松果体、インスリンは膵臓β細胞です。分泌部位の組合せが頻出です。"},
+{c:"基礎医学大要",q:"心臓の左心室から送り出された血液が流れる血管はどれか。",ch:["肺動脈","大動脈","大静脈","肺静脈"],a:1,ex:"体循環は左心室→大動脈→全身→大静脈→右心房の順です。肺循環は右心室→肺動脈→肺→肺静脈→左心房で、肺動脈には静脈血、肺静脈には動脈血が流れる点が引っかけポイントです。"},
+{c:"基礎医学大要",q:"腫瘍マーカーと疾患の組合せで正しいのはどれか。",ch:["AFP ― 肝細胞癌","CEA ― 前立腺癌","PSA ― 肺癌","CA19-9 ― 甲状腺癌"],a:0,ex:"AFPは肝細胞癌（や胎児性腫瘍）、PSAは前立腺癌、CEAは消化器癌を中心とする広いがんなどで使われます。マーカーは診断の補助であり、単独で確定診断にはなりません。"},
+{c:"基礎医学大要",q:"空気感染（飛沫核感染）する感染症はどれか。",ch:["インフルエンザ","結核","ノロウイルス感染症","MRSA感染症"],a:1,ex:"結核、麻疹、水痘は空気感染対策（陰圧室・N95マスク）が必要です。インフルエンザは主に飛沫感染、ノロウイルスは接触・経口が中心です。感染経路別の予防策が問われます。"},
+{c:"基礎医学大要",q:"ガス交換が行われる肺の構造はどれか。",ch:["気管","気管支","肺胞","胸膜"],a:2,ex:"肺胞は毛細血管に囲まれ、薄い壁を通して酸素と二酸化炭素の拡散（ガス交換）が行われます。肺胞の表面活性物質（サーファクタント）はII型肺胞上皮細胞から分泌され、肺胞の虚脱を防ぎます。"},
+{c:"基礎医学大要",q:"交感神経が優位になったときの反応はどれか。",ch:["瞳孔が縮小する","心拍数が増加する","消化管運動が亢進する","気管支が収縮する"],a:1,ex:"交感神経は「闘争と逃走」の反応で、心拍数増加、瞳孔散大、気管支拡張、消化管運動抑制を起こします。副交感神経はその逆の反応です。"},
+{c:"基礎医学大要",q:"胃液に含まれ、タンパク質消化に関わるものはどれか。",ch:["アミラーゼ","ペプシンと塩酸","リパーゼのみ","胆汁酸"],a:1,ex:"胃では壁細胞の塩酸と主細胞のペプシノーゲン（酸でペプシンに活性化）がタンパク質消化を始めます。アミラーゼは唾液・膵液、胆汁酸は肝臓で作られます。"},
+{c:"基礎医学大要",q:"骨の役割として正しいのはどれか。",ch:["カルシウムの貯蔵と骨髄での造血","インスリンの分泌","胆汁の貯蔵","尿の濃縮"],a:0,ex:"骨は支持・保護に加え、カルシウムやリンの貯蔵庫であり、骨髄では造血が行われます。成人の造血は主に体幹の赤色骨髄が担います。"},
+{c:"エックス線撮影技術学",q:"胸部立位正面（PA）撮影の標準的な条件はどれか。",ch:["低管電圧・短距離で撮影する","高管電圧（約120 kV）・撮影距離約180〜200 cmで撮影する","管電圧は40 kVが標準である","呼気で撮影する"],a:1,ex:"胸部PAは高管電圧で肋骨とのコントラスト差を抑え、長距離で心臓の拡大を防ぎます。深吸気位で撮影し、心胸郭比の評価はPA立位が基準です。"},
+{c:"エックス線撮影技術学",q:"腹部立位正面撮影で確認できる重要な所見はどれか。",ch:["横隔膜下の遊離ガス（フリーエアー）","脳出血","心筋梗塞","骨折の転位"],a:0,ex:"消化管穿孔では立位で横隔膜下に遊離ガスがたまります。腸閉塞では二ボー（気液面）も立位で評価します。臥位だけでは分からないため、立位や側臥位が追加されます。"},
+{c:"エックス線撮影技術学",q:"頭部撮影で眼窩下縁と外耳孔上縁を結ぶ基準線はどれか。",ch:["OMライン（眼耳線）","ドイツ水平線","レーゼル線","シャント線"],a:1,ex:"正解はドイツ水平線です。眼窩下縁と外耳孔上縁を結ぶ線で、Reidの基準線（フランクフルト線）に相当し、IOMライン（眼窩下縁と外耳孔を結ぶ線）とほぼ一致します。一方、OMライン（眼耳線）は外眼角（外眥）と外耳孔中心を結ぶ別の線で、頭蓋撮影の基本基準線として使われます。「下縁・上縁」ならドイツ水平線、「外眼角・外耳孔中心」ならOMラインと区別して覚えましょう。"},
+{c:"エックス線撮影技術学",q:"頚椎斜位撮影で観察しやすいのはどれか。",ch:["椎間孔","棘突起","歯突起","環椎の外側塊"],a:0,ex:"頚椎斜位は椎間孔と椎弓根の観察に適し、神経根症の評価に用います。歯突起は開口位正面、環軸関節も開口位で観察します。目的部位と体位の対応が頻出です。"},
+{c:"エックス線撮影技術学",q:"骨折の撮影で原則となるのはどれか。",ch:["1方向のみで十分である","2方向以上の撮影と、可能なら隣接関節を含める","関節は絶対に含めない","必ずCTのみで評価する"],a:1,ex:"骨折は転位の方向が1方向では分からないため、原則2方向以上で撮影します。長管骨では両端の関節を含めると、見逃しや伴う脱臼の評価に役立ちます。"},
+{c:"エックス線撮影技術学",q:"撮影条件で、管電流（mA）と撮影時間の積（mAs）を2倍にするとどうなるか。",ch:["線質が硬くなる","発生X線量（写真濃度・患者線量）がおよそ2倍になる","焦点が小さくなる","半価層が2倍になる"],a:1,ex:"mAsはX線の量を決め、比例して線量や黒化度が増えます。線質（実効エネルギー）を変えるのは主に管電圧です。量と質の役割分担は最頻出ポイントです。"},
+{c:"エックス線撮影技術学",q:"ポータブル（移動型）撮影で周囲の被ばくを減らす方法はどれか。",ch:["線源の近くに立つ","距離をとり、必要に応じて防護衣や遮へいを使う","撮影回数を増やす","管電圧を上げる"],a:1,ex:"移動型撮影は固定の防護設備がないため、逆二乗則を利用して距離をとること、防護衣・移動式防護衝立の使用、関係者以外を退避させることが重要です。"},
+{c:"エックス線撮影技術学",q:"乳幼児の撮影で正しい配慮はどれか。",ch:["固定は行わない","専用固定具を使い、介助者の被ばくにも配慮して短時間で撮影する","成人と同じ条件で必ず撮影する","防護は不要である"],a:1,ex:"乳幼児は動きによる再撮影を防ぐため固定具を用い、撮影範囲を必要最小限に絞ります。介助が必要な場合は保護者に防護衣を着け、介助者への説明と線量配慮を行います。生殖腺防護は現在のガイドラインでは日常的に推奨されない点も押さえましょう。"},
+{c:"エックス線撮影技術学",q:"側臥位水平方向撮影（デクビタス法）が有用なのはどれか。",ch:["少量の胸水や腹水、遊離ガスの移動を確認する","脳の断層を撮る","心臓の大きさを測る","歯の撮影"],a:0,ex:"デクビタス法は重力で液体やガスが移動することを利用し、少量の胸水・腹水やフリーエアーの確認に有効です。液体は下側に、ガスは上側に移動します。"},
+{c:"画像工学",q:"DQE（検出量子効率）の説明で正しいのはどれか。",ch:["入力信号に対する出力信号の大きさだけを表す","入力したX線量子をどれだけ有効に信号とSN比へ変換できたかを表す","フィルムの硬さの指標である","モニタの明るさの指標である"],a:1,ex:"DQEは検出器が入力量子を有効利用できた割合を示し、高いほど同じ線量で良いSN比が得られます。MTF（解像特性）とノイズ特性を合わせた総合性能指標です。"},
+{c:"画像工学",q:"ROC曲線について正しいのはどれか。",ch:["横軸は線量、縦軸は濃度である","感度と（1−特異度）の関係を表し、曲線下面積（AUC）が大きいほど診断能が高い","フィルムの特性曲線である","周波数応答を表す"],a:1,ex:"ROC曲線は読影者の診断能を評価する方法で、AUCが1に近いほど優秀です。特性曲線（濃度-露出）やMTF曲線と混同しないようにしましょう。"},
+{c:"画像工学",q:"フィルム特性曲線（H&D曲線）のガンマ（γ）はどれか。",ch:["曲線の脚部の傾き","直線部分の傾きで、コントラストの指標","肩部の高さ","最低濃度のこと"],a:1,ex:"特性曲線の直線部の傾きγが大きいほどコントラストは高く、ラチチュード（撮影寛容度）は狭くなります。脚部は低濃度部、肩部は飽和部を表します。"},
+{c:"画像工学",q:"量子モトル（量子ノイズ）が目立つのはどれか。",ch:["X線量が多すぎるとき","X線量が不足して検出される光子数が少ないとき","焦点が大きいとき","グリッドを使ったとき"],a:1,ex:"量子モトルは光子数の統計的ばらつきによるノイズで、線量不足で目立ちます。対策は適切な線量の確保ですが、被ばくとのバランスが重要です。粒状性の評価はウィナースペクトルでしたね。"},
+{c:"画像工学",q:"デジタル画像で画素ピッチ0.15 mmのとき、ナイキスト周波数はおよそどれか。",ch:["0.33 cycles/mm","3.3 cycles/mm","6.7 cycles/mm","15 cycles/mm"],a:1,ex:"ナイキスト周波数＝1/(2×ピッチ)＝1/(0.30)≒3.3 cycles/mmです。これより高い空間周波数は正しく再現できず、エリアシングの原因になります。"},
+{c:"画像工学",q:"階調処理（濃度変換処理）の目的はどれか。",ch:["空間分解能を上げる","観察しやすい濃度・コントラストに変換する","ノイズだけを消す","圧縮率を上げる"],a:1,ex:"階調処理はルックアップテーブルで濃度変換を行い、目的部位を見やすいコントラストで表示します。周波数処理は鮮鋭度やノイズに関わる処理で、役割が異なります。"},
+{c:"画像工学",q:"JPEG圧縮でブロックノイズが目立つ原因はどれか。",ch:["可逆圧縮のため","8×8画素ブロック単位のDCT処理と高い圧縮率","色数が多すぎるため","解像度が高すぎるため"],a:1,ex:"JPEGは画像を8×8ブロックに分けて離散コサイン変換で圧縮するため、高圧縮ではブロック境界が目立ちます。医用画像の診断用途では圧縮方式と圧縮率の選択に注意が必要です。"},
+{c:"画像工学",q:"CR・FPDなどデジタル撮影系のフィルム系に対する利点はどれか。",ch:["ダイナミックレンジが広く、露出の許容範囲が広い","後処理が一切できない","線量管理が不要になる","モニタ診断ができない"],a:0,ex:"デジタル系はダイナミックレンジが広く多少の露出過不足を後処理で補えます。ただし裏返せば過剰照射に気づきにくい（線量のクリープ）ため、撮影線量の確認が重要です。"},
+{c:"画像工学",q:"エッジ法によるMTF測定で最初に得られるプロファイルはどれか。",ch:["LSF（線像強度分布）","ESF（エッジ応答関数）を微分してLSFを得る","PSFを直接撮る","ノイズスペクトル"],a:1,ex:"エッジ法はエッジ像からESFを求め、微分してLSFにし、フーリエ変換してMTFを得ます。スリット法はLSFを直接測る方法です。測定法と得られる関数の対応が問われます。"},
+{c:"画像工学",q:"ウィナースペクトル（NPS）の測定から分かるのはどれか。",ch:["解像度","ノイズの周波数特性（粒状性）","階調数","線量の絶対値"],a:1,ex:"ウィナースペクトルはノイズパワーを周波数ごとに表したもので、粒状性の評価に使います。鮮鋭性はMTF、総合評価はDQEやNEQで表します。評価指標の使い分けが頻出です。"},
+{c:"放射線安全管理学",q:"医療被ばくの防護で用いられる考え方はどれか。",ch:["線量限度を患者にも適用する","行為の正当化と防護の最適化を行い、線量限度は適用しない","線量は常に最大にする","診断参考レベル（DRL）は使わない"],a:1,ex:"医療被ばくには線量限度を適用せず、正当化と最適化が原則です。DRLは最適化の目安として自施設の線量を比較するために用います。職業被ばく・公衆被ばくと扱いが違う点が重要です。"},
+{c:"放射線安全管理学",q:"放射線業務従事者の個人線量測定の頻度はどれか。",ch:["毎日","1か月ごとを超えない間隔で測定・評価する","1年ごとでよい","測定は任意である"],a:1,ex:"個人線量は原則として1か月ごとに測定し、線量を評価・記録します。体幹部が基本で、必要に応じて水晶体（眼の近く）や手指の追加測定を行います。"},
+{c:"放射線安全管理学",q:"場所の放射線量（漏洩線量など）の測定頻度として正しいのはどれか。",ch:["毎日","6月以内ごとに1回","5年に1回","設置時のみ"],a:1,ex:"管理区域の境界や病室など、場所の線量測定は6月以内ごとに1回行います（使用開始時や変更時も実施）。個人測定が1か月ごと、場所の測定が6か月ごと、という対比で覚えましょう。"},
+{c:"放射線安全管理学",q:"緊急作業（原子力災害など）に従事する際の実効線量限度の特例はどれか。",ch:["1 mSv","20 mSv","100 mSv","制限なし"],a:2,ex:"緊急作業では実効線量100 mSvを限度とする特例が定められています（人命救助などやむを得ない場合の扱いも別に定められます）。通常の職業被ばく限度5年100 mSv・年50 mSvとは区別しましょう。"},
+{c:"放射線安全管理学",q:"放射性同位元素の廃棄について正しいのはどれか。",ch:["一般ごみとして捨てられる","許可廃棄業者への引き渡しや、減衰を待つ保管廃棄など法令に沿って処理する","下水にそのまま流してよい","燃やせば全て無害になる"],a:1,ex:"RI廃棄物は一般廃棄できません。短半減期核種は保管して減衰を待つ方法、長半減期のものは許可を受けた廃棄事業者へ引き渡します。核種と半減期に応じた管理が求められます。"},
+/* ================= 画像問題（診療放射線技師 国家試験頻出） ================= */
+{
+  c: "診療画像機器学",
+  q: "図の頭部CT模式図において、黄色矢印（★）が示す構造はどれか。",
+  ch: ["側脳室前角", "第3脳室", "内包後脚", "松果体"],
+  a: 2,
+  ex: "視床とレンズ核（淡蒼球・被殻）の間を走行するのが内包後脚です。大脳皮質運動野からの錐体路（皮質脊髄路）が通過する極めて重要な解剖構造であり、脳梗塞や脳出血で片麻痺の原因となります。",
+  hasImg: true,
+  imgTitle: "頭部CT基底核・視床スライス模式図",
+  svg: '<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" class="quiz-svg"><defs><filter id="glow"><feGaussianBlur stdDeviation="2" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="400" height="300" fill="#080d1a" rx="12"/><ellipse cx="200" cy="150" rx="165" ry="130" fill="#11192e" stroke="#00f0ff" stroke-width="3" filter="url(#glow)"/><ellipse cx="200" cy="150" rx="152" ry="118" fill="#070a14" stroke="#1e293b" stroke-width="2"/><path d="M175 90 C185 110, 185 140, 178 150 C165 142, 160 125, 162 105 Z" fill="#002b4d" stroke="#00f0ff" stroke-width="1.5"/><path d="M225 90 C215 110, 215 140, 222 150 C235 142, 240 125, 238 105 Z" fill="#002b4d" stroke="#00f0ff" stroke-width="1.5"/><text x="200" y="110" fill="#64748b" font-size="10" text-anchor="middle" font-family="monospace">側脳室前角</text><line x1="198" y1="145" x2="198" y2="175" stroke="#38bdf8" stroke-width="3"/><text x="175" y="165" fill="#64748b" font-size="9" text-anchor="end">第3脳室</text><path d="M145 140 C135 155, 140 175, 155 180 C165 170, 165 150, 155 140 Z" fill="#1e1b4b" stroke="#a855f7" stroke-width="1.5"/><text x="130" y="165" fill="#c084fc" font-size="10">レンズ核</text><ellipse cx="185" cy="178" rx="14" ry="18" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/><text x="185" y="182" fill="#93c5fd" font-size="9" text-anchor="middle">視床</text><path d="M165 152 Q172 168 172 188" stroke="#ffe600" stroke-width="4" fill="none" stroke-linecap="round" filter="url(#glow)"/><path d="M138 210 L168 185" stroke="#ffe600" stroke-width="2.5"/><circle cx="170" cy="180" r="5" fill="#ffe600" filter="url(#glow)"/><text x="110" y="225" fill="#ffe600" font-size="14" font-weight="bold" filter="url(#glow)">★ 矢印部位</text></svg>',
+  chPoints: [
+    "側脳室前角: 左右の前方に広がるバタフライ形状の低吸収域です。",
+    "第3脳室: 左右の視床に挟まれた正中部のスリット状構造です。",
+    "内包後脚: 【正解】レンズ核と視床の間の白いV字路。運動神経（錐体路）が走ります。",
+    "松果体: 第3脳室後方に位置し、成人のCTで生理的石灰化（高吸収）を呈します。"
+  ]
+},
+{
+  c: "画像工学",
+  q: "図に示すフィルムの特性曲線（H&D曲線）において、コントラストの指標となるガンマ（γ）が算出される直線領域はどれか。",
+  ch: ["領域A（足部）", "領域B（直線部）", "領域C（肩部）", "領域D（反転部）"],
+  a: 1,
+  ex: "フィルムの特性曲線（H&D曲線）において、直線部（領域B）の傾き（tanθ）がガンマ（γ）であり、フィルムコントラストの指標となります。足部（A）は低濃度部、肩部（C）は飽和部、反転部（D）はソラリゼーション領域です。",
+  hasImg: true,
+  imgTitle: "フィルム特性曲線（H&D曲線）",
+  svg: '<svg viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg" class="quiz-svg"><defs><filter id="glow"><feGaussianBlur stdDeviation="2" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="400" height="280" fill="#080d1a" rx="12"/><line x1="60" y1="230" x2="360" y2="230" stroke="#64748b" stroke-width="2"/><line x1="60" y1="230" x2="60" y2="30" stroke="#64748b" stroke-width="2"/><text x="360" y="250" fill="#94a3b8" font-size="11" text-anchor="end">相対露出対数（log E）→</text><text x="50" y="30" fill="#94a3b8" font-size="11" text-anchor="end" transform="rotate(-90 50,30)">光学濃度（D）→</text><path d="M 70 215 C 120 215, 140 210, 170 170 L 250 85 C 275 55, 305 50, 350 50" fill="none" stroke="#00f0ff" stroke-width="3.5" filter="url(#glow)"/><circle cx="115" cy="210" r="6" fill="#ff0055"/><text x="115" y="195" fill="#ff0055" font-size="13" font-weight="bold" text-anchor="middle">A（足部）</text><circle cx="210" cy="127" r="7" fill="#ffe600" filter="url(#glow)"/><text x="240" y="135" fill="#ffe600" font-size="15" font-weight="bold">★ B（直線部）</text><line x1="160" y1="180" x2="260" y2="75" stroke="#ffe600" stroke-width="1.5" stroke-dasharray="4,3"/><text x="210" y="155" fill="#00f0ff" font-size="11">傾き＝γ</text><circle cx="300" cy="52" r="6" fill="#00ff66"/><text x="300" y="38" fill="#00ff66" font-size="13" font-weight="bold" text-anchor="middle">C（肩部）</text><path d="M 350 50 Q 370 52 385 65" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-dasharray="3,3"/><text x="380" y="85" fill="#a855f7" font-size="11">D（反転部）</text></svg>',
+  chPoints: [
+    "領域A（足部）: 露光不足領域。カブリ濃度から緩やかに立ち上がる曲線部分です。",
+    "領域B（直線部）: 【正解】露出と濃度が比例する領域。この傾きtanθがガンマ(γ)です。",
+    "領域C（肩部）: 露光過多領域。感光材料が限界に近づき濃度上昇が鈍化します。",
+    "領域D（反転部）: 極端な過剰露光により逆に濃度が下がるソラリゼーション現象です。"
+  ]
+},
+{
+  c: "エックス線撮影技術学",
+  q: "図に示す胸部立位正面X線写真の模式図において、心胸郭比（CTR）を求める正しい計算式はどれか。",
+  ch: ["(A + B) / C × 100 (%)", "(A × B) / C × 100 (%)", "C / (A + B) × 100 (%)", "(B - A) / C × 100 (%)"],
+  a: 0,
+  ex: "心胸郭比（CTR: Cardio-Thoracic Ratio）は、胸部立位正面PA像において、胸椎正中線から右心縁最大幅A、左心縁最大幅B、最大胸郭内幅Cを計測し、(A + B) / C × 100 (%) で算出します。成人の正常値は50%以下です。",
+  hasImg: true,
+  imgTitle: "胸部正面像 心胸郭比（CTR）計測図",
+  svg: '<svg viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg" class="quiz-svg"><defs><filter id="glow"><feGaussianBlur stdDeviation="2" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="400" height="280" fill="#080d1a" rx="12"/><path d="M 70 50 C 60 120, 60 210, 80 240 L 320 240 C 340 210, 340 120, 330 50" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/><line x1="200" y1="40" x2="200" y2="250" stroke="#f43f5e" stroke-width="1.5" stroke-dasharray="5,3"/><text x="204" y="48" fill="#f43f5e" font-size="9">正中線</text><path d="M 180 110 C 150 140, 150 175, 175 190 C 190 200, 240 205, 265 175 C 275 150, 230 115, 200 110 Z" fill="#1e293b" stroke="#ff0055" stroke-width="2" filter="url(#glow)"/><line x1="155" y1="160" x2="200" y2="160" stroke="#ffe600" stroke-width="3"/><circle cx="155" cy="160" r="3" fill="#ffe600"/><circle cx="200" cy="160" r="3" fill="#ffe600"/><text x="175" y="152" fill="#ffe600" font-size="13" font-weight="bold" text-anchor="middle">A</text><line x1="200" y1="175" x2="265" y2="175" stroke="#00f0ff" stroke-width="3"/><circle cx="200" cy="175" r="3" fill="#00f0ff"/><circle cx="265" cy="175" r="3" fill="#00f0ff"/><text x="232" y="167" fill="#00f0ff" font-size="13" font-weight="bold" text-anchor="middle">B</text><line x1="78" y1="225" x2="322" y2="225" stroke="#00ff66" stroke-width="3"/><circle cx="78" cy="225" r="4" fill="#00ff66"/><circle cx="322" cy="225" r="4" fill="#00ff66"/><text x="200" y="217" fill="#00ff66" font-size="14" font-weight="bold" text-anchor="middle">C（最大胸郭内径）</text></svg>',
+  chPoints: [
+    "(A + B) / C × 100 (%): 【正解】右最大幅Aと左最大幅Bの和を最大胸郭幅Cで除した比率。",
+    "(A × B) / C × 100 (%): 誤り。左右の心陰影幅の積ではなく「和」をとります。",
+    "C / (A + B) × 100 (%): 誤り。分母と分子が逆になっています。",
+    "(B - A) / C × 100 (%): 誤り。左右の差ではなく両側への張り出しの合計です。"
+  ]
+},
+{
+  c: "放射線物理学",
+  q: "図に示すX線スペクトルの『実線A』から『破線B』への変化をもたらした操作として正しいのはどれか。",
+  ch: ["管電圧（kV）を上げた", "管電流（mA）または照射時間を増やした", "付加フィルタを厚くした", "ターゲット物質の原子番号を大きくした"],
+  a: 1,
+  ex: "最短波長（λmin）が変わらず、連続X線および特性X線のスペクトル全体の高さ（光子数）のみが比例して増大しているため、管電流（mA）または照射時間（s）の積（mAs値）を増やした変化です。管電圧を変えると最短波長がシフトします。",
+  hasImg: true,
+  imgTitle: "X線スペクトルと撮影条件",
+  svg: '<svg viewBox="0 0 400 270" xmlns="http://www.w3.org/2000/svg" class="quiz-svg"><defs><filter id="glow"><feGaussianBlur stdDeviation="2" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="400" height="270" fill="#080d1a" rx="12"/><line x1="50" y1="220" x2="370" y2="220" stroke="#64748b" stroke-width="2"/><line x1="50" y1="220" x2="50" y2="30" stroke="#64748b" stroke-width="2"/><text x="370" y="240" fill="#94a3b8" font-size="11" text-anchor="end">光子エネルギー（keV）→</text><text x="40" y="30" fill="#94a3b8" font-size="11" text-anchor="end" transform="rotate(-90 40,30)">X線光子数→</text><path d="M 90 220 Q 150 140 200 145 L 205 70 L 210 147 Q 260 170 340 220" fill="none" stroke="#64748b" stroke-width="2.5" stroke-dasharray="4,3"/><text x="280" y="190" fill="#94a3b8" font-size="11">実線A（変更前）</text><path d="M 90 220 Q 150 80 200 85 L 205 35 L 210 88 Q 260 120 340 220" fill="none" stroke="#00f0ff" stroke-width="3.5" filter="url(#glow)"/><text x="280" y="100" fill="#00f0ff" font-size="12" font-weight="bold">破線B（変更後）★</text><circle cx="90" cy="220" r="5" fill="#ffe600"/><text x="90" y="240" fill="#ffe600" font-size="11" font-weight="bold" text-anchor="middle">最短波長（不変）</text></svg>',
+  chPoints: [
+    "管電圧を上げた: 最短波長λmin＝1.24/E が短波長（高エネルギー側）へシフトします。",
+    "管電流・時間を増やした: 【正解】最短波長はそのまま、X線強度が全域で比例増大します。",
+    "付加フィルタを厚くした: 低エネルギー側の光子が吸収され、ピークが高エネルギー側へ移ります。",
+    "原子番号を大きくした: 特性X線の発生エネルギー（ピーク位置）が右へ移動します。"
+  ]
+},
+{
+  c: "基礎医学大要",
+  q: "図に示す心臓の刺激伝導系において、正常な歩調取り（ペースメーカー）として機能する『★部位』はどれか。",
+  ch: ["洞房結節（キース・フラック結節）", "房室結節（田原結節）", "ヒス束", "プルキンエ線維"],
+  a: 0,
+  ex: "右心房上部の開口部付近に位置する洞房結節が、固有心筋に先行して規則的に活動電位を発生させる歩調取り（ペースメーカー）です。刺激は洞房結節 → 房室結節 → ヒス束 → 左右の脚 → プルキンエ線維へと伝導します。",
+  hasImg: true,
+  imgTitle: "心臓刺激伝導系の解剖模式図",
+  svg: '<svg viewBox="0 0 400 270" xmlns="http://www.w3.org/2000/svg" class="quiz-svg"><defs><filter id="glow"><feGaussianBlur stdDeviation="2" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="400" height="270" fill="#080d1a" rx="12"/><path d="M 140 70 C 90 70, 70 140, 110 200 C 140 240, 200 250, 200 250 C 200 250, 260 240, 290 200 C 330 140, 310 70, 260 70 C 230 70, 205 95, 200 110 C 195 95, 170 70, 140 70 Z" fill="#1e1b4b" stroke="#38bdf8" stroke-width="2.5"/><line x1="200" y1="110" x2="200" y2="250" stroke="#475569" stroke-width="2"/><circle cx="145" cy="95" r="10" fill="#ffe600" filter="url(#glow)"/><text x="145" y="99" fill="#080d1a" font-size="10" font-weight="bold" text-anchor="middle">★</text><text x="80" y="98" fill="#ffe600" font-size="13" font-weight="bold">★ 部位</text><circle cx="185" cy="145" r="7" fill="#ff0055"/><text x="145" y="145" fill="#f43f5e" font-size="10">房室結節</text><line x1="185" y1="145" x2="200" y2="165" stroke="#00ff66" stroke-width="3"/><text x="210" y="165" fill="#00ff66" font-size="10">ヒス束</text><path d="M 200 165 C 180 190, 150 210, 130 205" fill="none" stroke="#00f0ff" stroke-width="2.5" stroke-dasharray="3,2"/><path d="M 200 165 C 220 190, 250 210, 270 205" fill="none" stroke="#00f0ff" stroke-width="2.5" stroke-dasharray="3,2"/><text x="200" y="225" fill="#00f0ff" font-size="10" text-anchor="middle">プルキンエ線維網</text></svg>',
+  chPoints: [
+    "洞房結節: 【正解】右心房上部に位置し、心拍の歩調取りを行う最上位ペースメーカー。",
+    "房室結節: 心房と心室の間にあり、伝導を約0.1秒遅延させ心室の血液充満を助けます。",
+    "ヒス束: 線維組織（心室中隔上部）を貫いて興奮を心室へと中継する線維束です。",
+    "プルキンエ線維: 心室壁の内膜下に広く分布し、心室筋全体へ同期して興奮を伝えます。"
+  ]
+},
+{
+  c: "診療画像検査学",
+  q: "図に示す頭部MRI模式図において、脳脊髄液（水成分）が高信号（白色発光）として描出されている『画像B』の撮像法はどれか。",
+  ch: ["T1強調像", "T2強調像", "プロトン密度強調像", "拡散強調像（DWI）"],
+  a: 1,
+  ex: "脳脊髄液（CSF）などの自由水はT2緩和時間が長いため、長いTE（エコー時間）で収集するT2強調像において著明な高信号（白）として描出されます。一方、T1強調像（画像A）では水は低信号（黒）となります。",
+  hasImg: true,
+  imgTitle: "頭部MRI T1強調像 vs T2強調像の組織信号比較",
+  svg: '<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg" class="quiz-svg"><defs><filter id="glow"><feGaussianBlur stdDeviation="2" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="400" height="250" fill="#080d1a" rx="12"/><g transform="translate(30, 25)"><rect width="150" height="180" fill="#0d1527" stroke="#38bdf8" stroke-width="1.5" rx="8"/><text x="75" y="25" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle">画像A（水＝低信号）</text><ellipse cx="75" cy="105" rx="55" ry="65" fill="#1e293b" stroke="#475569" stroke-width="1.5"/><path d="M 65 75 C 72 85, 72 105, 68 115 C 60 110, 56 95, 58 85 Z" fill="#050811" stroke="#334155"/><path d="M 85 75 C 78 85, 78 105, 82 115 C 90 110, 94 95, 92 85 Z" fill="#050811" stroke="#334155"/><text x="75" y="160" fill="#64748b" font-size="10" text-anchor="middle">脳室: 黒（低信号）</text></g><g transform="translate(220, 25)"><rect width="150" height="180" fill="#0d1527" stroke="#00f0ff" stroke-width="2" rx="8" filter="url(#glow)"/><text x="75" y="25" fill="#00f0ff" font-size="13" font-weight="bold" text-anchor="middle">★ 画像B（水＝高信号）</text><ellipse cx="75" cy="105" rx="55" ry="65" fill="#1e293b" stroke="#475569" stroke-width="1.5"/><path d="M 65 75 C 72 85, 72 105, 68 115 C 60 110, 56 95, 58 85 Z" fill="#ffffff" stroke="#00f0ff" stroke-width="2" filter="url(#glow)"/><path d="M 85 75 C 78 85, 78 105, 82 115 C 90 110, 94 95, 92 85 Z" fill="#ffffff" stroke="#00f0ff" stroke-width="2" filter="url(#glow)"/><text x="75" y="160" fill="#38bdf8" font-size="11" font-weight="bold" text-anchor="middle">脳室(CSF): 白（高信号）★</text></g></svg>',
+  chPoints: [
+    "T1強調像: 画像Aに相当。水（脳脊髄液）が低信号（黒）、脂肪が高信号（白）です。",
+    "T2強調像: 【正解】画像Bに相当。水（脳脊髄液や病変部浮腫）が高信号（白）に光ります。",
+    "プロトン密度像: T1・T2の影響を抑え、プロトン（水素原子核）密度を反映した画像です。",
+    "拡散強調像: 水分子のブラウン運動拡散を捉え、超急性期脳梗塞の早期描出に必須です。"
+  ]
+}
+
+];
+/* ================= LOCAL STORAGE FOR WRONG QUESTIONS (Feature 4) ================= */
+var STORAGE_KEY_WRONG = "rad_guoshi_wrong_v2";
+function getWrongList() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY_WRONG);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+function saveWrongList(list) {
+  try { localStorage.setItem(STORAGE_KEY_WRONG, JSON.stringify(list)); } catch(e){}
+  updateWrongBadges();
+}
+function addWrongQuestion(q) {
+  var list = getWrongList();
+  var exists = list.some(function(x){ return x.q === q.q; });
+  if(!exists) {
+    list.unshift({ c: q.c, q: q.q, ch: q.ch, a: q.a, ex: q.ex, hasImg: q.hasImg, imgTitle: q.imgTitle, svg: q.svg, chPoints: q.chPoints, addedAt: Date.now() });
+    saveWrongList(list);
+  }
+}
+function removeWrongQuestion(qText) {
+  var list = getWrongList().filter(function(x){ return x.q !== qText; });
+  saveWrongList(list);
+}
+function isWrongQuestion(q) {
+  return getWrongList().some(function(x){ return x.q === q.q; });
+}
+function updateWrongBadges() {
+  var count = getWrongList().length;
+  var b1 = document.getElementById("wrongBadge");
+  var b2 = document.getElementById("reviewCountBadge");
+  var b3 = document.getElementById("reviewPanelCount");
+  var b4 = document.getElementById("wrongModalCount");
+  if(b1) b1.textContent = count;
+  if(b2) b2.textContent = count + "問";
+  if(b3) b3.textContent = count + "問";
+  if(b4) b4.textContent = count;
+}
+
+/* ================= SYNTHESIS SOUND & CYBER BGM ================= */
+var audioCtx = null, sfxOn = true, bgmOn = true;
+function getAudioContext() {
+  if(!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+  }
+  if(audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+function playTone(freq, dur, type, delay, vol) {
+  if(!sfxOn) return;
+  var ctx = getAudioContext(); if(!ctx) return;
+  var t = ctx.currentTime + (delay || 0);
+  var o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = type || "sawtooth";
+  o.frequency.setValueAtTime(freq, t);
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(ctx.destination);
+  o.start(t); o.stop(t + dur + 0.02);
+}
+function sndBuzz() {
+  playTone(220, 0.25, "sawtooth", 0, 0.25);
+  playTone(440, 0.25, "square", 0.05, 0.15);
+}
+function sndCorrect() {
+  playTone(523.25, 0.1, "square", 0, 0.15);
+  playTone(659.25, 0.1, "square", 0.08, 0.15);
+  playTone(783.99, 0.12, "square", 0.16, 0.15);
+  playTone(1046.5, 0.3, "square", 0.24, 0.2);
+}
+function sndWrong() {
+  playTone(180, 0.18, "sawtooth", 0, 0.2);
+  playTone(130, 0.35, "sawtooth", 0.12, 0.22);
+}
+function sndTick() {
+  playTone(1200, 0.03, "sine", 0, 0.05);
+}
+
+/* Cyber BGM (WebAudio Synth Loop) */
+var bgmTimer = null, bgmStep = 0, bgmGain = null;
+var BGM_BPM = 120;
+var CYBER_BASS = [65.4, 65.4, 73.4, 73.4, 87.3, 87.3, 98.0, 98.0];
+var CYBER_LEAD = [
+  523.25, 0, 587.33, 659.25, 0, 783.99, 659.25, 0,
+  587.33, 523.25, 0, 440.0, 0, 523.25, 587.33, 0
+];
+function stepBgm() {
+  if(!bgmOn || !audioCtx || !bgmGain) return;
+  var stepDur = 60 / BGM_BPM / 4;
+  var t = audioCtx.currentTime;
+  // Bass
+  if(bgmStep % 2 === 0) {
+    var bIdx = Math.floor(bgmStep / 4) % CYBER_BASS.length;
+    var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(CYBER_BASS[bIdx], t);
+    g.gain.setValueAtTime(0.08, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + stepDur * 1.8);
+    o.connect(g); g.connect(bgmGain);
+    o.start(t); o.stop(t + stepDur * 2);
+  }
+  // Lead
+  var lFreq = CYBER_LEAD[bgmStep % CYBER_LEAD.length];
+  if(lFreq > 0) {
+    var lo = audioCtx.createOscillator(), lg = audioCtx.createGain();
+    lo.type = "triangle";
+    lo.frequency.setValueAtTime(lFreq, t);
+    lg.gain.setValueAtTime(0.045, t);
+    lg.gain.exponentialRampToValueAtTime(0.001, t + stepDur * 1.5);
+    lo.connect(lg); lg.connect(bgmGain);
+    lo.start(t); lo.stop(t + stepDur * 1.6);
+  }
+  bgmStep = (bgmStep + 1) % 32;
+}
+function startBgm() {
+  if(!bgmOn || bgmTimer) return;
+  var ctx = getAudioContext(); if(!ctx) return;
+  if(!bgmGain) {
+    bgmGain = ctx.createGain();
+    bgmGain.gain.value = 0.6;
+    bgmGain.connect(ctx.destination);
+  }
+  bgmStep = 0;
+  bgmTimer = setInterval(stepBgm, (60 / BGM_BPM / 4) * 1000);
+}
+function stopBgm() {
+  if(bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; }
+}
+
+/* ================= GAME STATE & CONSTANTS ================= */
+var mode = "multi"; // multi | cpu | online | practice | review
+var playerCount = 2;
+var cpuDiff = "normal"; // easy | normal | hard (Feature 3)
+var previewEnabled = false; // Feature 2: default OFF for true buzz-in feel
+var selectedSubject = "全科目ミックス";
+var SUBJECTS = ["全科目ミックス", "画像問題 (頻出図解)", "放射線物理学", "放射化学", "放射線生物学", "医用工学", "診療画像機器学", "医用画像情報学", "核医学検査技術学", "放射線治療技術学", "放射線計測学", "診療画像検査学", "基礎医学大要", "エックス線撮影技術学", "画像工学", "放射線安全管理学"];
+
+var players = [];
+var deck = [], qIndex = 0, curQ = null;
+var phase = "idle"; // typing | answering | reveal | practice
+var charIdx = 0, typeTimer = null;
+var answeringIdx = -1, answerTimer = null, answerLeft = 0;
+var cpuBuzzAt = -1, cpuTimeout = null, cpuAnswerTimeout = null;
+var practiceCorrect = 0, practiceTotal = 10;
+var WIN_SCORE = 7, MAX_X = 3, TYPE_MS = 65, ANSWER_MS = 5000;
+
+/* Online PeerJS state */
+var peer = null, conn = null, myPeerId = "", targetPeerId = "", isHost = false, onlineConnected = false;
+var onlinePlayerNames = { host: "ホスト", guest: "ゲスト" };
+
+function $(id) { return document.getElementById(id); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function shuffle(arr) {
+  var a = arr.slice();
+  for(var i=a.length-1; i>0; i--){ var j = Math.floor(Math.random()*(i+1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+  return a;
+}
+
+/* Screen Transitions */
+function showScreen(name) {
+  $("screenTitle").classList.toggle("hidden", name !== "title");
+  $("screenGame").classList.toggle("hidden", name !== "game");
+  $("screenResult").classList.toggle("hidden", name !== "result");
+  window.scrollTo(0, 0);
+}
+
+/* ================= MODE SELECTION & SETUPS ================= */
+var modeCards = document.querySelectorAll(".mode-card");
+modeCards.forEach(function(card){
+  card.addEventListener("click", function(){
+    modeCards.forEach(function(c){ c.classList.remove("selected"); });
+    card.classList.add("selected");
+    mode = card.getAttribute("data-mode");
+
+    $("panelMulti").classList.toggle("hidden", mode !== "multi");
+    $("panelCpu").classList.toggle("hidden", mode !== "cpu");
+    $("panelOnline").classList.toggle("hidden", mode !== "online");
+    $("panelPractice").classList.toggle("hidden", mode !== "practice");
+    $("panelReview").classList.toggle("hidden", mode !== "review");
+    getAudioContext(); playTone(880, 0.05, "sine", 0, 0.05);
+  });
+});
+
+/* Multi players setup */
+function renderNameInputs() {
+  var box = $("nameInputs"); box.innerHTML = "";
+  var defs = ["プレイヤー1", "プレイヤー2", "プレイヤー3", "プレイヤー4"];
+  var cols = ["#00f0ff", "#ff0055", "#00ff66", "#ffe600"];
+  for(var i=0; i<playerCount; i++){
+    var div = document.createElement("div");
+    div.style.cssText = "display:flex;align-items:center;gap:8px;margin-bottom:8px;";
+    div.innerHTML = '<span style="width:14px;height:14px;border-radius:50%;background:'+cols[i]+';box-shadow:0 0 8px '+cols[i]+';"></span>' +
+                    '<input class="cyber-input" id="pname'+i+'" type="text" value="'+defs[i]+'" maxlength="10">';
+    box.appendChild(div);
+  }
+}
+document.querySelectorAll("#countRow button").forEach(function(b){
+  b.addEventListener("click", function(){
+    document.querySelectorAll("#countRow button").forEach(function(x){ x.classList.remove("active"); });
+    b.classList.add("active");
+    playerCount = parseInt(b.getAttribute("data-n"), 10);
+    renderNameInputs();
+  });
+});
+renderNameInputs();
+
+/* CPU Difficulty buttons (Feature 3) */
+document.querySelectorAll("#cpuDiffRow button").forEach(function(b){
+  b.addEventListener("click", function(){
+    document.querySelectorAll("#cpuDiffRow button").forEach(function(x){ x.classList.remove("active"); });
+    b.classList.add("active");
+    cpuDiff = b.getAttribute("data-diff");
+    var labelMap = { easy: "初級 (D判定)", normal: "中級 (合格ライン)", hard: "上級 (首席超速)" };
+    $("cpuDiffBadge").textContent = labelMap[cpuDiff] || "中級";
+    playTone(700, 0.04, "square", 0, 0.05);
+  });
+});
+
+/* Feature 2: Preview Toggle buttons */
+document.querySelectorAll("#previewSwitchGroup button").forEach(function(b){
+  b.addEventListener("click", function(){
+    document.querySelectorAll("#previewSwitchGroup button").forEach(function(x){ x.classList.remove("active"); });
+    b.classList.add("active");
+    previewEnabled = (b.getAttribute("data-val") === "on");
+    playTone(600, 0.04, "sine", 0, 0.05);
+  });
+});
+
+/* Subject Chips */
+function getSubjectPool(subj) {
+  if(subj === "全科目ミックス") return QUESTIONS;
+  if(subj === "画像問題 (頻出図解)") return QUESTIONS.filter(function(q){ return !!q.hasImg; });
+  return QUESTIONS.filter(function(q){ return q.c === subj; });
+}
+function renderSubjectChips() {
+  var box = $("subjChips"); box.innerHTML = "";
+  SUBJECTS.forEach(function(name){
+    var cnt = getSubjectPool(name).length;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "subj-chip" + (name === selectedSubject ? " sel" : "");
+    b.innerHTML = escapeHtml(name) + '<span class="cnt">' + cnt + '問</span>';
+    b.addEventListener("click", function(){
+      selectedSubject = name;
+      renderSubjectChips();
+      playTone(900, 0.03, "sine", 0, 0.05);
+    });
+    box.appendChild(b);
+  });
+  $("subjNote").textContent = (selectedSubject === "全科目ミックス")
+    ? "全14教科・画像問題を含む全" + QUESTIONS.length + "問からランダムに出題します。"
+    : "「" + selectedSubject + "」の" + getSubjectPool(selectedSubject).length + "問から出題します。";
+}
+renderSubjectChips();
+
+/* ================= ONLINE WEBRTC ENGINE (PeerJS) ================= */
+function initPeerAsHost() {
+  if(peer) try{ peer.destroy(); }catch(e){}
+  var randomId = "radq-" + Math.floor(1000 + Math.random() * 9000);
+  myPeerId = randomId;
+  $("hostRoomIdDisplay").textContent = randomId.toUpperCase();
+  $("hostLobbyStatus").textContent = "サーバーに接続中...";
+  $("hostLobbyStatus").style.color = "var(--neon-yellow)";
+
+  peer = new Peer(myPeerId);
+  peer.on("open", function(id){
+    $("hostLobbyStatus").textContent = "待機中：相手にルームIDかリンクを共有してください";
+    $("hostLobbyStatus").style.color = "var(--neon-cyan)";
+  });
+  peer.on("connection", function(c){
+    conn = c;
+    setupPeerConnection();
+  });
+  peer.on("error", function(err){
+    $("hostLobbyStatus").textContent = "接続エラー: " + err.type;
+    $("hostLobbyStatus").style.color = "var(--neon-pink)";
+  });
+}
+
+function initPeerAsGuest(targetId) {
+  if(peer) try{ peer.destroy(); }catch(e){}
+  var tempId = "radguest-" + Math.floor(1000 + Math.random() * 9000);
+  $("guestConnStatus").textContent = "ホスト " + targetId + " に接続試行中...";
+  $("guestConnStatus").style.color = "var(--neon-yellow)";
+
+  peer = new Peer(tempId);
+  peer.on("open", function(){
+    conn = peer.connect(targetId);
+    setupPeerConnection();
+  });
+  peer.on("error", function(err){
+    $("guestConnStatus").textContent = "接続失敗: ルームIDを確認してください";
+    $("guestConnStatus").style.color = "var(--neon-pink)";
+  });
+}
+
+function setupPeerConnection() {
+  if(!conn) return;
+  conn.on("open", function(){
+    onlineConnected = true;
+    sndCorrect();
+    if(isHost) {
+      onlinePlayerNames.host = $("onlineHostName").value.trim() || "ホスト";
+      $("hostLobbyStatus").textContent = "🎉 ゲストが参加しました！バトル開始を押してください";
+      $("hostLobbyStatus").style.color = "var(--neon-lime)";
+      sendNetMessage({ type: "HELLO", hostName: onlinePlayerNames.host });
+    } else {
+      onlinePlayerNames.guest = $("onlineGuestName").value.trim() || "ゲスト";
+      $("guestConnStatus").textContent = "✅ ルームに接続完了！ホストの開始を待っています...";
+      $("guestConnStatus").style.color = "var(--neon-lime)";
+      sendNetMessage({ type: "GUEST_JOIN", guestName: onlinePlayerNames.guest });
+    }
+  });
+
+  conn.on("data", function(data){
+    handleNetMessage(data);
+  });
+
+  conn.on("close", function(){
+    onlineConnected = false;
+    alert("オンライン接続が切断されました。");
+    showScreen("title");
+  });
+}
+
+function sendNetMessage(obj) {
+  if(conn && conn.open) conn.send(obj);
+}
+
+function handleNetMessage(msg) {
+  if(!msg || !msg.type) return;
+  switch(msg.type) {
+    case "HELLO":
+      onlinePlayerNames.host = msg.hostName || "ホスト";
+      break;
+    case "GUEST_JOIN":
+      onlinePlayerNames.guest = msg.guestName || "ゲスト";
+      $("hostLobbyStatus").textContent = "🎉 " + onlinePlayerNames.guest + " が参加！「バトル開始」を押してスタート";
+      break;
+    case "START_GAME":
+      players = msg.players;
+      deck = msg.deck;
+      previewEnabled = msg.previewEnabled;
+      selectedSubject = msg.selectedSubject;
+      qIndex = 0;
+      showScreen("game");
+      buildBuzzButtons();
+      $("emoteBar").classList.remove("hidden");
+      startQuestionNet(msg.curQ);
+      break;
+    case "NEXT_QUESTION":
+      startQuestionNet(msg.curQ);
+      break;
+    case "REQ_BUZZ":
+      if(isHost && phase === "typing") {
+        buzz(1);
+      }
+      break;
+    case "BUZZ_CONFIRMED":
+      handleBuzzConfirmed(msg.idx);
+      break;
+    case "ANSWER_SUBMITTED":
+      if(isHost) {
+        answer(msg.choiceIdx);
+      }
+      break;
+    case "ANSWER_RESULT":
+      applyAnswerResult(msg);
+      break;
+    case "EMOTE":
+      spawnFloatingEmote(msg.em);
+      break;
+  }
+}
+
+/* Online Role selection */
+document.querySelectorAll("#onlineRoleRow button").forEach(function(b){
+  b.addEventListener("click", function(){
+    document.querySelectorAll("#onlineRoleRow button").forEach(function(x){ x.classList.remove("active"); });
+    b.classList.add("active");
+    var role = b.getAttribute("data-role");
+    isHost = (role === "host");
+    $("hostArea").classList.toggle("hidden", !isHost);
+    $("guestArea").classList.toggle("hidden", isHost);
+    if(isHost) initPeerAsHost();
+  });
+});
+
+$("btnConnectHost").addEventListener("click", function(){
+  var raw = $("inputRoomId").value.trim().toLowerCase();
+  if(!raw) { alert("ルームIDを入力してください"); return; }
+  var id = raw.indexOf("radq-") === 0 ? raw : ("radq-" + raw.replace("rad-",""));
+  targetPeerId = id;
+  initPeerAsGuest(id);
+});
+
+$("btnCopyInviteLink").addEventListener("click", function(){
+  var url = location.protocol + "//" + location.host + location.pathname + "?room=" + myPeerId.replace("radq-","");
+  if(navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(function(){
+      alert("招待URLをコピーしました！LINEやDiscordに貼り付けて友達に送ってください。");
+    });
+  } else {
+    prompt("以下のURLをコピーして送ってください：", url);
+  }
+});
+
+/* Check URL for auto-join */
+window.addEventListener("DOMContentLoaded", function(){
+  var params = new URLSearchParams(location.search);
+  var room = params.get("room");
+  if(room) {
+    document.querySelector('.mode-card[data-mode="online"]').click();
+    document.querySelector('#onlineRoleRow button[data-role="guest"]').click();
+    $("inputRoomId").value = "RAD-" + room.replace("radq-","").toUpperCase();
+    setTimeout(function(){ $("btnConnectHost").click(); }, 300);
+  }
+});
+
+/* ================= START GAME LOGIC ================= */
+$("startBtn").addEventListener("click", function(){
+  getAudioContext();
+  if(bgmOn) startBgm();
+  startGame();
+});
+
+function startGame() {
+  players = [];
+  if(mode === "multi") {
+    for(var i=0; i<playerCount; i++){
+      var val = $("pname"+i).value.trim() || ("プレイヤー"+(i+1));
+      players.push({ name: val, colorIdx: i, isCPU: false, score: 0, crosses: 0, dq: false, locked: false });
+    }
+  } else if(mode === "cpu") {
+    var uname = $("cpuUserName").value.trim() || "あなた";
+    var cpuLabel = cpuDiff === "easy" ? "CPU (初級)" : (cpuDiff === "hard" ? "CPU (上級)" : "CPU (中級)");
+    players.push({ name: uname, colorIdx: 0, isCPU: false, score: 0, crosses: 0, dq: false, locked: false });
+    players.push({ name: cpuLabel, colorIdx: 1, isCPU: true, score: 0, crosses: 0, dq: false, locked: false });
+  } else if(mode === "online") {
+    if(!onlineConnected) {
+      alert("まだ対戦相手が接続していません。相手の入室をお待ちください。");
+      return;
+    }
+    players.push({ name: onlinePlayerNames.host, colorIdx: 0, isCPU: false, isOnline: true, score: 0, crosses: 0, dq: false, locked: false });
+    players.push({ name: onlinePlayerNames.guest, colorIdx: 1, isCPU: false, isOnline: true, score: 0, crosses: 0, dq: false, locked: false });
+  } else if(mode === "review") {
+    players.push({ name: "あなた", colorIdx: 0, isCPU: false, score: 0, crosses: 0, dq: false, locked: false });
+  } else {
+    // practice
+    players.push({ name: "あなた", colorIdx: 0, isCPU: false, score: 0, crosses: 0, dq: false, locked: false });
+  }
+
+  // Filter pool
+  if(mode === "review") {
+    pool = getWrongList();
+    if(pool.length === 0) {
+      alert("現在、苦手・要復習に登録された問題はありません。通常モードで遊ぶと間違えた問題が自動蓄積されます！");
+      return;
+    }
+  } else {
+    pool = getSubjectPool(selectedSubject);
+  }
+  poolSize = pool.length;
+  deck = shuffle(pool);
+  practiceTotal = Math.min(10, poolSize);
+  qIndex = 0; practiceCorrect = 0;
+
+  showScreen("game");
+  buildBuzzButtons();
+  $("emoteBar").classList.toggle("hidden", mode !== "online");
+
+  if(mode === "online" && isHost) {
+    sendNetMessage({
+      type: "START_GAME",
+      players: players,
+      deck: deck,
+      curQ: deck[0],
+      previewEnabled: previewEnabled,
+      selectedSubject: selectedSubject
+    });
+  }
+
+  if(mode === "practice" || mode === "review") {
+    startPracticeQuestion();
+  } else {
+    startQuestion();
+  }
+}
+
+/* ================= SCOREBOARD & BUZZ BUTTONS ================= */
+function renderScoreboard() {
+  var sb = $("scoreboard");
+  sb.className = "scoreboard sb-" + Math.min(players.length, 4);
+  sb.innerHTML = "";
+  if(mode === "practice" || mode === "review") {
+    sb.className = "scoreboard sb-2";
+    sb.innerHTML = 
+      '<div class="sb-card c1"><div class="sb-name">' + (mode==="review"?"苦手克服セッション":"練習セッション") + '</div><div class="sb-marks"><span class="o">正解 ' + practiceCorrect + '</span><span> / ' + qIndex + '問済</span></div><div class="sb-state">正答率 ' + (qIndex ? Math.round(practiceCorrect/qIndex*100) : 0) + '%</div></div>' +
+      '<div class="sb-card"><div class="sb-name">進行度</div><div class="sb-marks"><span>第 ' + (Math.min(qIndex+1, practiceTotal)) + ' 問 / 全 ' + practiceTotal + ' 問</span></div><div class="sb-state">早押しなし・じっくり思考OK</div></div>';
+    return;
+  }
+
+  players.forEach(function(p, i){
+    var card = document.createElement("div");
+    card.className = "sb-card c" + (p.colorIdx + 1) + (p.dq ? " dq" : "") + (phase === "answering" && answeringIdx === i ? " answering" : "");
+    var st = "";
+    if(p.dq) st = "失格（×3つ）";
+    else if(phase === "answering" && answeringIdx === i) st = "回答権獲得！(5秒)";
+    else if(p.locked) st = "この問題は回答済";
+    else if(phase === "typing") st = "早押し待機中...";
+    card.innerHTML = 
+      '<div class="sb-name">' + (p.isCPU ? "🤖 " : "") + escapeHtml(p.name) + '</div>' +
+      '<div class="sb-marks"><span class="o">○ ' + p.score + '</span><span class="x">× ' + p.crosses + '</span></div>' +
+      '<div class="sb-state' + (phase==="answering" && answeringIdx===i ? " hot" : "") + '">' + st + '</div>';
+    sb.appendChild(card);
+  });
+}
+
+function buildBuzzButtons() {
+  var grid = $("buzzGrid");
+  grid.className = "buzz-grid n" + players.length;
+  grid.innerHTML = "";
+  $("buzzZone").classList.toggle("hidden", mode === "practice" || mode === "review");
+
+  var keys = ["A", "F", "J", "L"];
+  players.forEach(function(p, i){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "buzz-btn b" + (p.colorIdx + 1);
+    b.id = "buzz" + i;
+    b.innerHTML = '<span class="b-bell">🔔</span><span class="b-name">' + escapeHtml(p.name) + '</span><span class="b-sub">' + (p.isCPU ? "CPU自律" : "KEY: " + keys[i]) + '</span>';
+    (function(idx){
+      b.addEventListener("click", function(){
+        if(mode === "online" && !isHost) {
+          if(phase === "typing") sendNetMessage({ type: "REQ_BUZZ" });
+        } else {
+          buzz(idx);
+        }
+      });
+    })(i);
+    grid.appendChild(b);
+  });
+}
+
+function refreshBuzzButtons() {
+  players.forEach(function(p, i){
+    var b = $("buzz" + i); if(!b) return;
+    var can = (phase === "typing" && !p.dq && !p.locked && !p.isCPU);
+    b.disabled = !can || p.isCPU;
+    b.classList.toggle("ready", phase === "typing" && !p.dq && !p.locked);
+  });
+}
+
+/* ================= QUESTION FLOW ================= */
+function startQuestion() {
+  clearAllTimers();
+  if(qIndex >= deck.length) {
+    if(poolSize > 1) {
+      deck = shuffle(pool); qIndex = 0;
+      if(curQ && deck[0] === curQ) deck.push(deck.shift());
+    } else { finishByDeckEnd(); return; }
+  }
+  curQ = deck[qIndex];
+  players.forEach(function(p){ p.locked = false; });
+  charIdx = 0; answeringIdx = -1; phase = "typing";
+
+  setupQuestionUI();
+  scheduleCPUBuzz();
+  startTyping();
+}
+
+function startQuestionNet(q) {
+  clearAllTimers();
+  curQ = q;
+  players.forEach(function(p){ p.locked = false; });
+  charIdx = 0; answeringIdx = -1; phase = "typing";
+  setupQuestionUI();
+  startTyping();
+}
+
+function setupQuestionUI() {
+  $("qNum").textContent = "第" + (qIndex + 1) + "問";
+  $("qCat").textContent = curQ.c;
+  $("flash").textContent = ""; $("flash").className = "flash-bar";
+  $("qHint").textContent = "分かったら自分のボタンを押して！";
+  $("qHint").className = "qhint";
+  hideTimer();
+
+  // Image question support (Feature 6)
+  if(curQ.hasImg && curQ.svg) {
+    $("qBadgeImg").classList.remove("hidden");
+    $("qImgWrap").classList.remove("hidden");
+    $("qImgTitle").innerHTML = "📷 " + escapeHtml(curQ.imgTitle || "画像模式図");
+    $("qSvgContainer").innerHTML = curQ.svg;
+    $("qImgWrap").onclick = function() {
+      openZoomModal(curQ.imgTitle, curQ.svg);
+    };
+  } else {
+    $("qBadgeImg").classList.add("hidden");
+    $("qImgWrap").classList.add("hidden");
+  }
+
+  // Choices preview (Feature 2)
+  renderChoicesArea(previewEnabled);
+  renderScoreboard(); refreshBuzzButtons();
+}
+
+function startTyping() {
+  stopTyping();
+  typeTimer = setInterval(function(){
+    if(phase !== "typing") { stopTyping(); return; }
+    if(charIdx < curQ.q.length) {
+      charIdx++;
+      renderQText();
+      checkCPUBuzz();
+    } else {
+      stopTyping();
+      $("qHint").textContent = "全文表示完了！早押し受付中！";
+      onTextFull();
+    }
+  }, TYPE_MS);
+}
+function stopTyping() { if(typeTimer){ clearInterval(typeTimer); typeTimer = null; } }
+
+function renderQText() {
+  var done = charIdx >= curQ.q.length;
+  $("qText").innerHTML = escapeHtml(curQ.q.slice(0, charIdx)) + (done ? "" : '<span class="caret"></span>');
+}
+
+function onTextFull() {
+  if(mode === "cpu" && phase === "typing") {
+    var cpu = players[1];
+    if(cpu && !cpu.dq && !cpu.locked && cpuBuzzAt < 0) {
+      var wait = cpuDiff === "hard" ? (300 + Math.random()*500) : (cpuDiff === "easy" ? (1200 + Math.random()*1500) : (700 + Math.random()*1000));
+      cpuTimeout = setTimeout(function(){ if(phase === "typing") buzz(1); }, wait);
+    }
+  }
+}
+
+/* CPU Buzz Strategy (Feature 3) */
+function scheduleCPUBuzz() {
+  cpuBuzzAt = -1;
+  if(mode !== "cpu") return;
+  var cpu = players[1];
+  if(!cpu || cpu.dq || cpu.locked) return;
+  if(cpuDiff === "hard") {
+    cpuBuzzAt = Math.max(3, Math.floor(curQ.q.length * (0.2 + Math.random()*0.3)));
+  } else if(cpuDiff === "easy") {
+    cpuBuzzAt = Math.max(5, Math.floor(curQ.q.length * (0.75 + Math.random()*0.2)));
+  } else {
+    cpuBuzzAt = Math.max(4, Math.floor(curQ.q.length * (0.4 + Math.random()*0.4)));
+  }
+}
+function checkCPUBuzz() {
+  if(mode !== "cpu" || phase !== "typing") return;
+  if(cpuBuzzAt >= 0 && charIdx >= cpuBuzzAt) {
+    cpuBuzzAt = -1;
+    buzz(1);
+  }
+}
+
+/* ================= BUZZ ACTION ================= */
+function buzz(idx) {
+  if(phase !== "typing") return;
+  var p = players[idx];
+  if(!p || p.dq || p.locked) return;
+  stopTyping(); clearCPUTimers();
+  phase = "answering"; answeringIdx = idx;
+  sndBuzz();
+
+  if(mode === "online" && isHost) {
+    sendNetMessage({ type: "BUZZ_CONFIRMED", idx: idx });
+  }
+
+  handleBuzzConfirmed(idx);
+}
+
+function handleBuzzConfirmed(idx) {
+  stopTyping(); clearCPUTimers();
+  phase = "answering"; answeringIdx = idx;
+  var p = players[idx];
+  $("flash").textContent = "🔔 " + p.name + " がボタンを押した！";
+  $("flash").className = "flash-bar";
+  $("qHint").textContent = p.name + " が回答中… 5秒以内に選択！";
+  $("qHint").className = "qhint hot";
+  renderQText();
+  renderScoreboard(); refreshBuzzButtons();
+
+  renderActiveChoices(idx);
+  startAnswerTimer();
+
+  if(p.isCPU) {
+    var thinkTime = cpuDiff === "hard" ? (600 + Math.random()*700) : (1000 + Math.random()*1200);
+    cpuAnswerTimeout = setTimeout(function(){
+      if(phase !== "answering" || answeringIdx !== idx) return;
+      var acc = cpuDiff === "hard" ? 0.92 : (cpuDiff === "easy" ? 0.50 : 0.72);
+      var pick = (Math.random() < acc) ? curQ.a : [0,1,2,3].filter(function(x){ return x !== curQ.a; })[Math.floor(Math.random()*3)];
+      answer(pick);
+    }, thinkTime);
+  }
+}
+
+/* ================= CHOICES DISPLAY (Feature 2 & 5) ================= */
+function renderChoicesArea(showOptions) {
+  var area = $("choiceArea"); area.innerHTML = "";
+  if(!showOptions) {
+    var box = document.createElement("div");
+    box.className = "choices-locked-box";
+    box.innerHTML = '<span class="lock-ico">🔒</span><span style="color:#fff;font-weight:900;">選択肢はロックされています</span><br><small style="color:var(--text-dim);">ボタンを素早く押したプレイヤーのみに4つの選択肢が開示されます</small>';
+    area.appendChild(box);
+    return;
+  }
+  var list = document.createElement("div"); list.className = "choices";
+  curQ.ch.forEach(function(ch, i){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "choice-btn preview"; b.disabled = true;
+    b.innerHTML = '<span class="no">' + (i+1) + '</span><span>' + escapeHtml(ch) + '</span>';
+    list.appendChild(b);
+  });
+  area.appendChild(list);
+}
+
+function renderActiveChoices(forIdx) {
+  var area = $("choiceArea"); area.innerHTML = "";
+  var list = document.createElement("div"); list.className = "choices";
+  var ansPlayer = players[forIdx];
+  var canTap = false;
+
+  if(mode === "online") {
+    canTap = (isHost && forIdx === 0) || (!isHost && forIdx === 1);
+  } else {
+    canTap = !ansPlayer.isCPU;
+  }
+
+  curQ.ch.forEach(function(ch, i){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "choice-btn"; b.id = "choice" + i;
+    b.innerHTML = '<span class="no">' + (i+1) + '</span><span>' + escapeHtml(ch) + '</span>';
+    if(canTap) {
+      (function(ci){
+        b.addEventListener("click", function(){
+          if(mode === "online" && !isHost) {
+            sendNetMessage({ type: "ANSWER_SUBMITTED", choiceIdx: ci });
+          } else {
+            answer(ci);
+          }
+        });
+      })(i);
+    } else {
+      b.disabled = true;
+    }
+    list.appendChild(b);
+  });
+  area.appendChild(list);
+
+  if(ansPlayer.isCPU) {
+    var w = document.createElement("div");
+    w.style.cssText = "text-align:center;margin-top:10px;font-size:13px;font-weight:800;color:var(--neon-yellow);";
+    w.textContent = "🤖 CPUが思考中...";
+    area.appendChild(w);
+  } else if(!canTap && mode === "online") {
+    var w2 = document.createElement("div");
+    w2.style.cssText = "text-align:center;margin-top:10px;font-size:13px;font-weight:800;color:var(--neon-cyan);";
+    w2.textContent = "相手が回答中... 画面を見守ってください";
+    area.appendChild(w2);
+  }
+}
+
+/* Answer Timer */
+function startAnswerTimer() {
+  stopAnswerTimer();
+  answerLeft = ANSWER_MS;
+  $("timerWrap").classList.remove("hidden");
+  $("timerLabel").classList.remove("hidden");
+  updateTimerBar();
+  var last = Date.now();
+  answerTimer = setInterval(function(){
+    var now = Date.now();
+    answerLeft -= (now - last); last = now;
+    if(answerLeft <= 1500 && answerLeft > 0 && Math.random() < 0.3) sndTick();
+    if(answerLeft <= 0) {
+      answerLeft = 0; updateTimerBar();
+      if(mode !== "online" || isHost) answer(-1);
+      return;
+    }
+    updateTimerBar();
+  }, 50);
+}
+function stopAnswerTimer() { if(answerTimer){ clearInterval(answerTimer); answerTimer = null; } }
+function updateTimerBar() {
+  var pct = Math.max(0, answerLeft / ANSWER_MS * 100);
+  $("timerBar").style.width = pct + "%";
+  $("timerBar").classList.toggle("low", pct <= 35);
+  $("timerLabel").textContent = "回答まで " + (answerLeft/1000).toFixed(1) + "秒";
+}
+function hideTimer() {
+  $("timerWrap").classList.add("hidden");
+  $("timerLabel").classList.add("hidden");
+}
+
+/* ================= ANSWER LOGIC ================= */
+function answer(choiceIdx) {
+  if(phase !== "answering") return;
+  stopAnswerTimer(); clearCPUTimers();
+  var idx = answeringIdx, p = players[idx];
+  var correct = (choiceIdx === curQ.a);
+
+  if(mode === "online" && isHost) {
+    sendNetMessage({
+      type: "ANSWER_RESULT",
+      choiceIdx: choiceIdx,
+      answeringIdx: idx,
+      correct: correct,
+      curScore: p.score + (correct ? 1 : 0),
+      curCrosses: p.crosses + (correct ? 0 : 1)
+    });
+  }
+
+  applyAnswerResult({
+    choiceIdx: choiceIdx,
+    answeringIdx: idx,
+    correct: correct
+  });
+}
+
+function applyAnswerResult(res) {
+  stopAnswerTimer(); hideTimer();
+  var idx = res.answeringIdx, p = players[idx];
+  var correct = res.correct;
+
+  // Highlight choices
+  for(var i=0; i<4; i++){
+    var b = $("choice" + i); if(!b) continue;
+    b.disabled = true;
+    if(i === curQ.a) b.classList.add("correct");
+    else if(i === res.choiceIdx) b.classList.add("wrong");
+    else b.classList.add("dim");
+  }
+
+  if(correct) {
+    p.score++;
+    sndCorrect();
+    phase = "reveal";
+    $("flash").textContent = "⭕ 正解！ " + p.name + " に ○ 1点！（現在 " + p.score + "点）";
+    $("flash").className = "flash-bar ok";
+    showExplain(true, p);
+  } else {
+    p.crosses++;
+    p.locked = true;
+    sndWrong();
+    addWrongQuestion(curQ);
+
+    if(p.crosses >= MAX_X) p.dq = true;
+    var msg = (res.choiceIdx === -1 ? "⏰ 時間切れ！ " : "❌ 不正解！ ") + p.name + " に ×（" + p.crosses + "つ目）";
+    if(p.dq) msg += " ― ×3つで失格！";
+    $("flash").textContent = msg;
+    $("flash").className = "flash-bar ng";
+
+    var remaining = players.filter(function(x){ return !x.dq && !x.locked; });
+    var alive = players.filter(function(x){ return !x.dq; });
+    answeringIdx = -1;
+
+    if(remaining.length === 0 || (alive.length === 1 && players.length > 1)) {
+      phase = "reveal";
+      showExplain(false, null);
+    } else {
+      phase = "typing";
+      $("qHint").textContent = "残りのプレイヤーで続行！分かったら押して！";
+      setTimeout(function(){
+        if(phase !== "typing") return;
+        renderChoicesArea(previewEnabled);
+        $("flash").textContent = "";
+        renderScoreboard(); refreshBuzzButtons();
+        scheduleCPUBuzz();
+        if(charIdx < curQ.q.length) startTyping();
+        else onTextFull();
+      }, 1500);
+    }
+  }
+  renderScoreboard(); refreshBuzzButtons();
+}
+
+/* ================= EXPLANATION & FEATURE 4 & 5 ================= */
+function showExplain(wasCorrect, scorer) {
+  var area = $("choiceArea");
+  var ex = document.createElement("div");
+  ex.className = "explain-box";
+
+  // Feature 5: Detailed 4-choice breakdown
+  var breakdownHtml = '<div class="choices-breakdown"><div class="cb-title">🔍 各選択肢の要点チェック</div>';
+  curQ.ch.forEach(function(opt, ci){
+    var isRight = (ci === curQ.a);
+    var pointText = "";
+    if(curQ.chPoints && curQ.chPoints[ci]) {
+      pointText = curQ.chPoints[ci];
+    } else {
+      pointText = isRight ? "【正解】国試頻出の最重要キーワードです。" : "【誤答肢】数値や対象部位の混同に注意しましょう。";
+    }
+    breakdownHtml += '<div class="cb-item' + (isRight ? ' correct-item' : '') + '">' + (isRight ? '○ ' : '× ') + (ci+1) + '. ' + escapeHtml(pointText) + '</div>';
+  });
+  breakdownHtml += '</div>';
+
+  var isClipped = isWrongQuestion(curQ);
+  var clipBtnText = isClipped ? "⭐ 苦手・要復習に保存済 (タップで解除)" : "☆ 苦手・要復習に保存する";
+
+  ex.innerHTML = 
+    '<div class="ex-header ' + (wasCorrect ? 'ok' : 'ng') + '">' + (wasCorrect ? '⭕ 正解発表' : '❌ 正解発表（全員不正解）') + '</div>' +
+    '<div class="ex-ans-line">正解：' + (curQ.a + 1) + '．' + escapeHtml(curQ.ch[curQ.a]) + '</div>' +
+    '<div class="ex-desc">💡 くわしい解説：<br>' + escapeHtml(curQ.ex) + '</div>' +
+    breakdownHtml +
+    '<button class="clip-btn' + (isClipped ? ' clipped' : '') + '" id="btnClipQuestion" type="button">' + clipBtnText + '</button>';
+
+  area.appendChild(ex);
+
+  var cBtn = $("btnClipQuestion");
+  if(cBtn) {
+    cBtn.addEventListener("click", function(){
+      if(isWrongQuestion(curQ)) {
+        removeWrongQuestion(curQ.q);
+        cBtn.textContent = "☆ 苦手・要復習に保存する";
+        cBtn.classList.remove("clipped");
+      } else {
+        addWrongQuestion(curQ);
+        cBtn.textContent = "⭐ 苦手・要復習に保存済 (タップで解除)";
+        cBtn.classList.add("clipped");
+        playTone(880, 0.1, "sine", 0, 0.1);
+      }
+    });
+  }
+
+  var winner = checkWinner();
+  var nextBtn = document.createElement("button");
+  nextBtn.type = "button"; nextBtn.className = "next-btn";
+  nextBtn.textContent = winner ? "🏆 結果を見る" : "次の問題へ ▶";
+  nextBtn.addEventListener("click", function(){
+    if(winner) {
+      showResult(winner);
+    } else {
+      qIndex++;
+      if(mode === "online" && isHost) {
+        sendNetMessage({ type: "NEXT_QUESTION", curQ: deck[qIndex] });
+      }
+      startQuestion();
+    }
+  });
+  area.appendChild(nextBtn);
+}
+
+function checkWinner() {
+  for(var i=0; i<players.length; i++){ if(players[i].score >= WIN_SCORE) return players[i]; }
+  var alive = players.filter(function(x){ return !x.dq; });
+  if(players.length > 1 && alive.length === 1) return alive[0];
+  if(players.length > 1 && alive.length === 0) return null;
+  return null;
+}
+function finishByDeckEnd() {
+  var sorted = players.slice().sort(function(a,b){ return (b.score - a.score) || (a.crosses - b.crosses); });
+  showResult(sorted[0], true);
+}
+
+/* ================= PRACTICE / REVIEW MODE ================= */
+function startPracticeQuestion() {
+  clearAllTimers();
+  if(qIndex >= practiceTotal) { showPracticeResult(); return; }
+  curQ = deck[qIndex];
+  phase = "practice";
+
+  setupQuestionUI();
+  $("qHint").textContent = "正解だと思う選択肢を選んでください。";
+
+  var area = $("choiceArea"); area.innerHTML = "";
+  var list = document.createElement("div"); list.className = "choices";
+  curQ.ch.forEach(function(ch, i){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "choice-btn"; b.id = "choice" + i;
+    b.innerHTML = '<span class="no">' + (i+1) + '</span><span>' + escapeHtml(ch) + '</span>';
+    (function(ci){
+      b.addEventListener("click", function(){ practiceAnswer(ci); });
+    })(i);
+    list.appendChild(b);
+  });
+  area.appendChild(list);
+}
+
+function practiceAnswer(choiceIdx) {
+  if(phase !== "practice") return;
+  phase = "practiceReveal";
+  var correct = (choiceIdx === curQ.a);
+  if(correct) { practiceCorrect++; sndCorrect(); }
+  else {
+    sndWrong();
+    addWrongQuestion(curQ);
+  }
+
+  for(var i=0; i<4; i++){
+    var b = $("choice" + i); if(!b) continue;
+    b.disabled = true;
+    if(i === curQ.a) b.classList.add("correct");
+    else if(i === choiceIdx) b.classList.add("wrong");
+    else b.classList.add("dim");
+  }
+
+  $("flash").textContent = correct ? "⭕ 正解！" : "❌ 不正解…";
+  $("flash").className = "flash-bar " + (correct ? "ok" : "ng");
+  showExplain(correct, players[0]);
+}
+
+function showPracticeResult() {
+  clearAllTimers(); phase = "idle";
+  showScreen("result");
+  var pct = Math.round(practiceCorrect / practiceTotal * 100);
+  $("resultEmoji").textContent = pct >= 80 ? "🏆" : (pct >= 50 ? "📚" : "✏️");
+  $("resultTitle").textContent = practiceTotal + "問中 " + practiceCorrect + "問 正解！";
+  $("resultSub").textContent = "正答率 " + pct + "% ・ " + (pct >= 80 ? "国試突破レベル！素晴らしい！" : (pct >= 50 ? "あと少し！苦手分野を復習しよう。" : "解説を読み込んで基礎を固めよう！"));
+
+  var list = $("rankList"); list.innerHTML = "";
+  var card = document.createElement("div");
+  card.className = "sb-card c1";
+  card.innerHTML = 
+    '<div class="sb-name">セッション結果（' + escapeHtml(selectedSubject) + '）</div>' +
+    '<div class="sb-marks"><span class="o">正解 ' + practiceCorrect + '</span><span class="x">不正解 ' + (practiceTotal - practiceCorrect) + '</span></div>';
+  list.appendChild(card);
+
+  var shareText = "📚 国試早押しバトル 練習結果\n出題: " + selectedSubject + "\n" + practiceTotal + "問中 " + practiceCorrect + "問正解！（正答率 " + pct + "%）\n#診療放射線技師国家試験 #早押しクイズ";
+  $("copyPreview").textContent = shareText;
+}
+
+/* ================= RESULT SCREEN ================= */
+function showResult(winner, byDeck) {
+  clearAllTimers(); phase = "idle";
+  showScreen("result");
+  var sorted = players.slice().sort(function(a,b){ return (b.score - a.score) || (a.crosses - b.crosses); });
+
+  $("resultEmoji").textContent = "👑";
+  if(winner) {
+    $("resultTitle").textContent = winner.name + " の勝利！";
+    $("resultSub").textContent = byDeck ? "問題を使い切り最多得点で決着！" : (winner.score >= WIN_SCORE ? "7点先取で完全勝利！" : "相手の失格により勝利決定！");
+    sndCorrect();
+  } else {
+    $("resultTitle").textContent = "勝者なし";
+    $("resultSub").textContent = "全員失格となりました。";
+  }
+
+  var list = $("rankList"); list.innerHTML = "";
+  sorted.forEach(function(p, i){
+    var card = document.createElement("div");
+    card.className = "sb-card c" + (p.colorIdx + 1);
+    card.style.cssText = "display:flex;align-items:center;justify-content:space-between;padding:12px;";
+    card.innerHTML = 
+      '<div style="display:flex;align-items:center;gap:10px;">' +
+        '<span style="font-family:Orbitron;font-weight:900;font-size:16px;color:var(--neon-cyan);">' + (i+1) + '位</span>' +
+        '<span style="font-weight:900;color:#fff;">' + (p.isCPU ? "🤖 " : "") + escapeHtml(p.name) + '</span>' +
+      '</div>' +
+      '<div class="sb-marks"><span class="o">○ ' + p.score + '</span><span class="x">× ' + p.crosses + '</span></div>';
+    list.appendChild(card);
+  });
+
+  var shareLines = [
+    "🏆 国試早押しバトル 結果発表！",
+    "勝者: " + (winner ? winner.name : "なし"),
+    "科目: " + selectedSubject,
+    "――――――――"
+  ];
+  sorted.forEach(function(p, i){
+    shareLines.push((i+1) + "位 " + p.name + " (○" + p.score + " ×" + p.crosses + ")");
+  });
+  shareLines.push("――――――――\n#診療放射線技師国家試験 #早押しバトル");
+  $("copyPreview").textContent = shareLines.join("\n");
+}
+
+/* Copy Result */
+$("copyResultBtn").addEventListener("click", function(){
+  var text = $("copyPreview").textContent;
+  if(navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function(){
+      $("copyStatusText").textContent = "✅ コピーしました！LINEを開いて貼り付けてね";
+    });
+  } else {
+    prompt("コピーしてください：", text);
+  }
+});
+$("btnPlayAgain").addEventListener("click", function(){ getAudioContext(); startGame(); });
+$("btnBackHome").addEventListener("click", function(){ clearAllTimers(); phase = "idle"; showScreen("title"); });
+
+/* ================= MODAL HANDLERS (Feature 4 & 6) ================= */
+function openZoomModal(title, svg) {
+  $("modalZoomTitle").textContent = title || "画像拡大表示";
+  $("modalZoomBody").innerHTML = svg;
+  $("modalZoom").classList.remove("hidden");
+}
+$("btnCloseZoom").addEventListener("click", function(){ $("modalZoom").classList.add("hidden"); });
+$("modalZoom").addEventListener("click", function(e){ if(e.target === this) this.classList.add("hidden"); });
+
+/* Weak Points Modal (Feature 4) */
+$("btnWrongManage").addEventListener("click", function(){
+  renderWrongModalList();
+  $("modalWrong").classList.remove("hidden");
+});
+$("btnCloseWrong").addEventListener("click", function(){ $("modalWrong").classList.add("hidden"); });
+$("modalWrong").addEventListener("click", function(e){ if(e.target === this) this.classList.add("hidden"); });
+
+function renderWrongModalList() {
+  var list = getWrongList();
+  updateWrongBadges();
+  var box = $("wrongListContainer"); box.innerHTML = "";
+  if(list.length === 0) {
+    box.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-dim);font-size:13px;">登録された苦手問題はありません。</div>';
+    return;
+  }
+  list.forEach(function(item, idx){
+    var div = document.createElement("div");
+    div.style.cssText = "background:rgba(15,23,42,0.8);border:1px solid rgba(0,240,255,0.25);border-radius:10px;padding:10px;font-size:12.5px;";
+    div.innerHTML = 
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">' +
+        '<span style="color:var(--neon-cyan);font-weight:900;">[' + escapeHtml(item.c) + ']</span>' +
+        '<button type="button" class="del-wrong" data-q="' + escapeHtml(item.q) + '" style="background:none;border:none;color:var(--neon-pink);cursor:pointer;font-weight:800;">✕ 削除</button>' +
+      '</div>' +
+      '<div style="color:#fff;font-weight:700;margin-bottom:4px;">' + escapeHtml(item.q) + '</div>' +
+      '<div style="color:var(--neon-lime);font-size:11.5px;">正解: ' + escapeHtml(item.ch[item.a]) + '</div>';
+    box.appendChild(div);
+  });
+
+  box.querySelectorAll(".del-wrong").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      removeWrongQuestion(btn.getAttribute("data-q"));
+      renderWrongModalList();
+    });
+  });
+}
+
+$("btnClearAllWrong").addEventListener("click", function(){
+  if(confirm("登録された全ての苦手問題を削除しますか？")) {
+    saveWrongList([]);
+    renderWrongModalList();
+  }
+});
+
+$("btnStartWrongReview").addEventListener("click", function(){
+  $("modalWrong").classList.add("hidden");
+  document.querySelector('.mode-card[data-mode="review"]').click();
+  $("startBtn").click();
+});
+
+/* Emotes in Online Mode */
+document.querySelectorAll(".emote-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    var em = btn.getAttribute("data-em");
+    spawnFloatingEmote(em);
+    if(mode === "online") sendNetMessage({ type: "EMOTE", em: em });
+  });
+});
+
+function spawnFloatingEmote(em) {
+  var el = document.createElement("div");
+  el.className = "floating-emote";
+  el.textContent = em;
+  el.style.left = (window.innerWidth * (0.3 + Math.random() * 0.4)) + "px";
+  el.style.bottom = "120px";
+  document.body.appendChild(el);
+  setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 1800);
+}
+
+/* Audio Controls */
+$("bgmToggleBtn").addEventListener("click", function(){
+  bgmOn = !bgmOn;
+  this.textContent = bgmOn ? "🎵 BGM" : "🔇 BGM";
+  this.classList.toggle("active", bgmOn);
+  if(bgmOn) { getAudioContext(); startBgm(); }
+  else stopBgm();
+});
+$("sfxToggleBtn").addEventListener("click", function(){
+  sfxOn = !sfxOn;
+  this.textContent = sfxOn ? "🔊 SE" : "🔇 SE";
+  this.classList.toggle("active", sfxOn);
+});
+
+function clearAllTimers() {
+  stopTyping(); stopAnswerTimer(); clearCPUTimers();
+}
+function clearCPUTimers() {
+  if(cpuTimeout){ clearTimeout(cpuTimeout); cpuTimeout = null; }
+  if(cpuAnswerTimeout){ clearTimeout(cpuAnswerTimeout); cpuAnswerTimeout = null; }
+}
+
+/* Keyboard Support */
+document.addEventListener("keydown", function(e){
+  if($("screenGame").classList.contains("hidden")) return;
+  var k = e.key.toLowerCase();
+  var keyMap = { a:0, f:1, j:2, l:3 };
+  if(phase === "typing" && (k in keyMap)) {
+    if(mode === "online" && !isHost) {
+      sendNetMessage({ type: "REQ_BUZZ" });
+    } else {
+      buzz(keyMap[k]);
+    }
+  } else if(phase === "answering" && ["1","2","3","4"].indexOf(k) >= 0) {
+    var cIdx = parseInt(k, 10) - 1;
+    if(mode === "online" && !isHost) {
+      sendNetMessage({ type: "ANSWER_SUBMITTED", choiceIdx: cIdx });
+    } else {
+      answer(cIdx);
+    }
+  } else if(phase === "practice" && ["1","2","3","4"].indexOf(k) >= 0) {
+    practiceAnswer(parseInt(k, 10) - 1);
+  }
+});
+
+// Update initial badges
+updateWrongBadges();
+</script>
+</body>
+</html>
