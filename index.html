@@ -1663,11 +1663,24 @@ function buildBuzzButtons() {
     b.type = "button";
     b.className = "buzz-btn b" + (p.colorIdx + 1);
     b.id = "buzz" + i;
-    b.innerHTML = '<span class="b-bell">🔔</span><span class="b-name">' + escapeHtml(p.name) + '</span><span class="b-sub">' + (p.isCPU ? "CPU自律" : "KEY: " + keys[i]) + '</span>';
+    
+    var subText = p.isCPU ? "CPU自律" : "KEY: " + keys[i];
+    if(mode === "online") {
+      var isMe = (isHost && i === 0) || (!isHost && i === 1);
+      subText = isMe ? "★ あなたのボタン" : "（相手のボタン）";
+    }
+
+    b.innerHTML = '<span class="b-bell">🔔</span><span class="b-name">' + escapeHtml(p.name) + '</span><span class="b-sub">' + subText + '</span>';
     (function(idx){
       b.addEventListener("click", function(){
-        if(mode === "online" && !isHost) {
-          if(phase === "typing") sendNetMessage({ type: "REQ_BUZZ" });
+        if(mode === "online") {
+          var isMe = (isHost && idx === 0) || (!isHost && idx === 1);
+          if(!isMe) return; // Cannot press opponent's button
+          if(isHost) {
+            buzz(0);
+          } else {
+            if(phase === "typing") sendNetMessage({ type: "REQ_BUZZ" });
+          }
         } else {
           buzz(idx);
         }
@@ -1681,8 +1694,12 @@ function refreshBuzzButtons() {
   players.forEach(function(p, i){
     var b = $("buzz" + i); if(!b) return;
     var can = (phase === "typing" && !p.dq && !p.locked && !p.isCPU);
+    if(mode === "online") {
+      var isMe = (isHost && i === 0) || (!isHost && i === 1);
+      can = can && isMe;
+    }
     b.disabled = !can || p.isCPU;
-    b.classList.toggle("ready", phase === "typing" && !p.dq && !p.locked);
+    b.classList.toggle("ready", can && !p.dq && !p.locked);
   });
 }
 
@@ -2371,15 +2388,23 @@ document.addEventListener("keydown", function(e){
   var k = e.key.toLowerCase();
   var keyMap = { a:0, f:1, j:2, l:3 };
   if(phase === "typing" && (k in keyMap)) {
-    if(mode === "online" && !isHost) {
-      sendNetMessage({ type: "REQ_BUZZ" });
+    if(mode === "online") {
+      var mappedIdx = keyMap[k];
+      var isMe = (isHost && mappedIdx === 0) || (!isHost && mappedIdx === 1);
+      if(isMe || k === " " || k === "enter") {
+        if(isHost) buzz(0);
+        else sendNetMessage({ type: "REQ_BUZZ" });
+      }
     } else {
       buzz(keyMap[k]);
     }
   } else if(phase === "answering" && ["1","2","3","4"].indexOf(k) >= 0) {
     var cIdx = parseInt(k, 10) - 1;
-    if(mode === "online" && !isHost) {
-      sendNetMessage({ type: "ANSWER_SUBMITTED", choiceIdx: cIdx });
+    if(mode === "online") {
+      var isMyTurn = (isHost && answeringIdx === 0) || (!isHost && answeringIdx === 1);
+      if(!isMyTurn) return; // Ignore opponent's answering phase
+      if(isHost) answer(cIdx);
+      else sendNetMessage({ type: "ANSWER_SUBMITTED", choiceIdx: cIdx });
     } else {
       answer(cIdx);
     }
