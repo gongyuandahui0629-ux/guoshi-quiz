@@ -614,8 +614,8 @@
           <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:8px;">あなたの名前：</div>
           <input class="cyber-input" id="onlineHostName" type="text" value="ホスト" maxlength="10" style="margin-bottom:10px;">
           <div style="background:rgba(0,0,0,0.5);border:1px dashed var(--border-neon);padding:12px;border-radius:12px;text-align:center;">
-            <div style="font-size:11.5px;color:var(--text-dim);">あなたのルームID</div>
-            <div id="hostRoomIdDisplay" style="font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;color:var(--neon-cyan);margin:4px 0;">RAD-????</div>
+            <div style="font-size:11.5px;color:var(--text-dim);">あなたのルームID（数字4桁）</div>
+            <div id="hostRoomIdDisplay" style="font-family:'Orbitron',sans-serif;font-size:32px;letter-spacing:4px;font-weight:900;color:var(--neon-cyan);margin:6px 0;">????</div>
             <button class="hud-btn" id="btnCopyInviteLink" type="button" style="width:100%;justify-content:center;margin-top:6px;">
               🔗 招待リンクをコピー (LINEに貼る)
             </button>
@@ -628,8 +628,8 @@
         <div id="guestArea" class="hidden">
           <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:8px;">あなたの名前：</div>
           <input class="cyber-input" id="onlineGuestName" type="text" value="ゲスト" maxlength="10" style="margin-bottom:10px;">
-          <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">合言葉・ルームID：</div>
-          <input class="cyber-input" id="inputRoomId" type="text" placeholder="例: RAD-1234" style="text-transform:uppercase;margin-bottom:10px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">合言葉・ルームID（数字4桁）：</div>
+          <input class="cyber-input" id="inputRoomId" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="例: 1234" style="font-size:18px;letter-spacing:2px;margin-bottom:10px;">
           <button class="hud-btn active" id="btnConnectHost" type="button" style="width:100%;justify-content:center;padding:12px;">
             ⚡ ルームへ参加
           </button>
@@ -1382,15 +1382,16 @@ renderSubjectChips();
 /* ================= ONLINE WEBRTC ENGINE (PeerJS) ================= */
 function initPeerAsHost() {
   if(peer) try{ peer.destroy(); }catch(e){}
-  var randomId = "radq-" + Math.floor(1000 + Math.random() * 9000);
+  var code4 = String(Math.floor(1000 + Math.random() * 9000));
+  var randomId = "radq-" + code4;
   myPeerId = randomId;
-  $("hostRoomIdDisplay").textContent = randomId.toUpperCase();
+  $("hostRoomIdDisplay").textContent = code4;
   $("hostLobbyStatus").textContent = "サーバーに接続中...";
   $("hostLobbyStatus").style.color = "var(--neon-yellow)";
 
   peer = new Peer(myPeerId);
   peer.on("open", function(id){
-    $("hostLobbyStatus").textContent = "待機中：相手にルームIDかリンクを共有してください";
+    $("hostLobbyStatus").textContent = "待機中：相手に「" + code4 + "」を伝えてください";
     $("hostLobbyStatus").style.color = "var(--neon-cyan)";
   });
   peer.on("connection", function(c){
@@ -1403,10 +1404,10 @@ function initPeerAsHost() {
   });
 }
 
-function initPeerAsGuest(targetId) {
+function initPeerAsGuest(targetId, displayCode) {
   if(peer) try{ peer.destroy(); }catch(e){}
   var tempId = "radguest-" + Math.floor(1000 + Math.random() * 9000);
-  $("guestConnStatus").textContent = "ホスト " + targetId + " に接続試行中...";
+  $("guestConnStatus").textContent = "ルーム " + (displayCode || targetId) + " に接続試行中...";
   $("guestConnStatus").style.color = "var(--neon-yellow)";
 
   peer = new Peer(tempId);
@@ -1415,7 +1416,7 @@ function initPeerAsGuest(targetId) {
     setupPeerConnection();
   });
   peer.on("error", function(err){
-    $("guestConnStatus").textContent = "接続失敗: ルームIDを確認してください";
+    $("guestConnStatus").textContent = "接続失敗: 4桁の番号を確認してください";
     $("guestConnStatus").style.color = "var(--neon-pink)";
   });
 }
@@ -1517,18 +1518,20 @@ document.querySelectorAll("#onlineRoleRow button").forEach(function(b){
 });
 
 $("btnConnectHost").addEventListener("click", function(){
-  var raw = $("inputRoomId").value.trim().toLowerCase();
-  if(!raw) { alert("ルームIDを入力してください"); return; }
-  var id = raw.indexOf("radq-") === 0 ? raw : ("radq-" + raw.replace("rad-",""));
+  var raw = $("inputRoomId").value.trim();
+  if(!raw) { alert("4桁のルームIDを入力してください"); return; }
+  var digits = raw.replace(/[^0-9]/g, "");
+  var id = digits ? ("radq-" + digits) : raw;
   targetPeerId = id;
-  initPeerAsGuest(id);
+  initPeerAsGuest(id, digits || raw);
 });
 
 $("btnCopyInviteLink").addEventListener("click", function(){
-  var url = location.protocol + "//" + location.host + location.pathname + "?room=" + myPeerId.replace("radq-","");
+  var code = myPeerId.replace("radq-","");
+  var url = location.protocol + "//" + location.host + location.pathname + "?room=" + code;
   if(navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(url).then(function(){
-      alert("招待URLをコピーしました！LINEやDiscordに貼り付けて友達に送ってください。");
+      alert("招待URL（ルームID: " + code + "）をコピーしました！LINEやDiscordに貼り付けて友達に送ってください。");
     });
   } else {
     prompt("以下のURLをコピーして送ってください：", url);
@@ -1540,9 +1543,10 @@ window.addEventListener("DOMContentLoaded", function(){
   var params = new URLSearchParams(location.search);
   var room = params.get("room");
   if(room) {
+    var digits = room.replace(/[^0-9]/g, "");
     document.querySelector('.mode-card[data-mode="online"]').click();
     document.querySelector('#onlineRoleRow button[data-role="guest"]').click();
-    $("inputRoomId").value = "RAD-" + room.replace("radq-","").toUpperCase();
+    $("inputRoomId").value = digits || room;
     setTimeout(function(){ $("btnConnectHost").click(); }, 300);
   }
 });
@@ -1997,6 +2001,11 @@ function applyAnswerResult(res) {
 
     if(remaining.length === 0 || (alive.length === 1 && players.length > 1)) {
       phase = "reveal";
+      for(var k=0; k<4; k++){
+        var bk = $("choice" + k); if(!bk) continue;
+        if(k === curQ.a) bk.classList.add("correct");
+        else bk.classList.add("dim");
+      }
       showExplain(false, null);
     } else {
       phase = "typing";
@@ -2024,34 +2033,28 @@ function showExplain(wasCorrect, scorer) {
   var isClipped = isWrongQuestion(curQ);
   var clipBtnText = isClipped ? "⭐ 苦手・要復習に保存済 (タップで解除)" : "☆ 苦手・要復習に保存する";
 
-  if(wasCorrect) {
-    // Feature 5: Detailed 4-choice breakdown (only displayed on correct)
-    var breakdownHtml = '<div class="choices-breakdown"><div class="cb-title">🔍 各選択肢の要点チェック</div>';
-    curQ.ch.forEach(function(opt, ci){
-      var isRight = (ci === curQ.a);
-      var pointText = "";
-      if(curQ.chPoints && curQ.chPoints[ci]) {
-        pointText = curQ.chPoints[ci];
-      } else {
-        pointText = isRight ? "【正解】国試頻出の最重要キーワードです。" : "【誤答肢】数値や対象部位の混同に注意しましょう。";
-      }
-      breakdownHtml += '<div class="cb-item' + (isRight ? ' correct-item' : '') + '">' + (isRight ? '○ ' : '× ') + (ci+1) + '. ' + escapeHtml(pointText) + '</div>';
-    });
-    breakdownHtml += '</div>';
+  // Feature 5: Detailed 4-choice breakdown (revealed before next question)
+  var breakdownHtml = '<div class="choices-breakdown"><div class="cb-title">🔍 各選択肢の要点チェック</div>';
+  curQ.ch.forEach(function(opt, ci){
+    var isRight = (ci === curQ.a);
+    var pointText = "";
+    if(curQ.chPoints && curQ.chPoints[ci]) {
+      pointText = curQ.chPoints[ci];
+    } else {
+      pointText = isRight ? "【正解】国試頻出の最重要キーワードです。" : "【誤答肢】数値や対象部位の混同に注意しましょう。";
+    }
+    breakdownHtml += '<div class="cb-item' + (isRight ? ' correct-item' : '') + '">' + (isRight ? '○ ' : '× ') + (ci+1) + '. ' + escapeHtml(pointText) + '</div>';
+  });
+  breakdownHtml += '</div>';
 
-    ex.innerHTML = 
-      '<div class="ex-header ok">⭕ 正解！ ナイス回答！</div>' +
-      '<div class="ex-ans-line">正解：' + (curQ.a + 1) + '．' + escapeHtml(curQ.ch[curQ.a]) + '</div>' +
-      '<div class="ex-desc">💡 くわしい解説：<br>' + escapeHtml(curQ.ex) + '</div>' +
-      breakdownHtml +
-      '<button class="clip-btn' + (isClipped ? ' clipped' : '') + '" id="btnClipQuestion" type="button">' + clipBtnText + '</button>';
-  } else {
-    // When wrong, do NOT reveal correct answer or details
-    ex.innerHTML = 
-      '<div class="ex-header ng">❌ 不正解！（全員回答不能）</div>' +
-      '<div class="ex-desc" style="color:var(--text-secondary);font-size:13px;padding:8px 0;">※ 答えが合うまで正解・解説は非表示です。苦手問題に保存して復習しよう！</div>' +
-      '<button class="clip-btn' + (isClipped ? ' clipped' : '') + '" id="btnClipQuestion" type="button">' + clipBtnText + '</button>';
-  }
+  var headerHtml = wasCorrect ? '<div class="ex-header ok">⭕ 正解！ ナイス回答！</div>' : '<div class="ex-header ng">❌ 正解発表（全員回答不能）</div>';
+
+  ex.innerHTML = 
+    headerHtml +
+    '<div class="ex-ans-line">正解：' + (curQ.a + 1) + '．' + escapeHtml(curQ.ch[curQ.a]) + '</div>' +
+    '<div class="ex-desc">💡 くわしい解説：<br>' + escapeHtml(curQ.ex) + '</div>' +
+    breakdownHtml +
+    '<button class="clip-btn' + (isClipped ? ' clipped' : '') + '" id="btnClipQuestion" type="button">' + clipBtnText + '</button>';
 
   area.appendChild(ex);
 
