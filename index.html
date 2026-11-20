@@ -512,8 +512,6 @@
       <button class="hud-btn badge-btn" id="btnWrongManage" type="button" title="苦手問題を管理">
         🔥 復習 <span class="hud-badge" id="wrongBadge">0</span>
       </button>
-      <button class="hud-btn active" id="bgmToggleBtn" type="button">🎵 BGM</button>
-      <button class="hud-btn active" id="sfxToggleBtn" type="button">🔊 SE</button>
     </div>
   </div>
 
@@ -1470,14 +1468,18 @@ function handleNetMessage(msg) {
       deck = msg.deck;
       previewEnabled = msg.previewEnabled;
       selectedSubject = msg.selectedSubject;
-      qIndex = 0;
+      qIndex = msg.qIndex !== undefined ? msg.qIndex : 0;
       showScreen("game");
       buildBuzzButtons();
       $("emoteBar").classList.remove("hidden");
       startQuestionNet(msg.curQ);
       break;
     case "NEXT_QUESTION":
+      if(msg.qIndex !== undefined) qIndex = msg.qIndex;
       startQuestionNet(msg.curQ);
+      break;
+    case "SHOW_RESULT":
+      showResult(msg.winner, msg.byDeck);
       break;
     case "REQ_BUZZ":
       if(isHost && phase === "typing") {
@@ -1603,6 +1605,7 @@ function startGame() {
       players: players,
       deck: deck,
       curQ: deck[0],
+      qIndex: 0,
       previewEnabled: previewEnabled,
       selectedSubject: selectedSubject
     });
@@ -1956,13 +1959,17 @@ function applyAnswerResult(res) {
   var idx = res.answeringIdx, p = players[idx];
   var correct = res.correct;
 
-  // Highlight choices
+  // Highlight choices (only reveal correct if user was correct)
   for(var i=0; i<4; i++){
     var b = $("choice" + i); if(!b) continue;
     b.disabled = true;
-    if(i === curQ.a) b.classList.add("correct");
-    else if(i === res.choiceIdx) b.classList.add("wrong");
-    else b.classList.add("dim");
+    if(correct) {
+      if(i === curQ.a) b.classList.add("correct");
+      else b.classList.add("dim");
+    } else {
+      if(i === res.choiceIdx) b.classList.add("wrong");
+      else b.classList.add("dim");
+    }
   }
 
   if(correct) {
@@ -2014,29 +2021,37 @@ function showExplain(wasCorrect, scorer) {
   var ex = document.createElement("div");
   ex.className = "explain-box";
 
-  // Feature 5: Detailed 4-choice breakdown
-  var breakdownHtml = '<div class="choices-breakdown"><div class="cb-title">🔍 各選択肢の要点チェック</div>';
-  curQ.ch.forEach(function(opt, ci){
-    var isRight = (ci === curQ.a);
-    var pointText = "";
-    if(curQ.chPoints && curQ.chPoints[ci]) {
-      pointText = curQ.chPoints[ci];
-    } else {
-      pointText = isRight ? "【正解】国試頻出の最重要キーワードです。" : "【誤答肢】数値や対象部位の混同に注意しましょう。";
-    }
-    breakdownHtml += '<div class="cb-item' + (isRight ? ' correct-item' : '') + '">' + (isRight ? '○ ' : '× ') + (ci+1) + '. ' + escapeHtml(pointText) + '</div>';
-  });
-  breakdownHtml += '</div>';
-
   var isClipped = isWrongQuestion(curQ);
   var clipBtnText = isClipped ? "⭐ 苦手・要復習に保存済 (タップで解除)" : "☆ 苦手・要復習に保存する";
 
-  ex.innerHTML = 
-    '<div class="ex-header ' + (wasCorrect ? 'ok' : 'ng') + '">' + (wasCorrect ? '⭕ 正解発表' : '❌ 正解発表（全員不正解）') + '</div>' +
-    '<div class="ex-ans-line">正解：' + (curQ.a + 1) + '．' + escapeHtml(curQ.ch[curQ.a]) + '</div>' +
-    '<div class="ex-desc">💡 くわしい解説：<br>' + escapeHtml(curQ.ex) + '</div>' +
-    breakdownHtml +
-    '<button class="clip-btn' + (isClipped ? ' clipped' : '') + '" id="btnClipQuestion" type="button">' + clipBtnText + '</button>';
+  if(wasCorrect) {
+    // Feature 5: Detailed 4-choice breakdown (only displayed on correct)
+    var breakdownHtml = '<div class="choices-breakdown"><div class="cb-title">🔍 各選択肢の要点チェック</div>';
+    curQ.ch.forEach(function(opt, ci){
+      var isRight = (ci === curQ.a);
+      var pointText = "";
+      if(curQ.chPoints && curQ.chPoints[ci]) {
+        pointText = curQ.chPoints[ci];
+      } else {
+        pointText = isRight ? "【正解】国試頻出の最重要キーワードです。" : "【誤答肢】数値や対象部位の混同に注意しましょう。";
+      }
+      breakdownHtml += '<div class="cb-item' + (isRight ? ' correct-item' : '') + '">' + (isRight ? '○ ' : '× ') + (ci+1) + '. ' + escapeHtml(pointText) + '</div>';
+    });
+    breakdownHtml += '</div>';
+
+    ex.innerHTML = 
+      '<div class="ex-header ok">⭕ 正解！ ナイス回答！</div>' +
+      '<div class="ex-ans-line">正解：' + (curQ.a + 1) + '．' + escapeHtml(curQ.ch[curQ.a]) + '</div>' +
+      '<div class="ex-desc">💡 くわしい解説：<br>' + escapeHtml(curQ.ex) + '</div>' +
+      breakdownHtml +
+      '<button class="clip-btn' + (isClipped ? ' clipped' : '') + '" id="btnClipQuestion" type="button">' + clipBtnText + '</button>';
+  } else {
+    // When wrong, do NOT reveal correct answer or details
+    ex.innerHTML = 
+      '<div class="ex-header ng">❌ 不正解！（全員回答不能）</div>' +
+      '<div class="ex-desc" style="color:var(--text-secondary);font-size:13px;padding:8px 0;">※ 答えが合うまで正解・解説は非表示です。苦手問題に保存して復習しよう！</div>' +
+      '<button class="clip-btn' + (isClipped ? ' clipped' : '') + '" id="btnClipQuestion" type="button">' + clipBtnText + '</button>';
+  }
 
   area.appendChild(ex);
 
@@ -2059,18 +2074,40 @@ function showExplain(wasCorrect, scorer) {
   var winner = checkWinner();
   var nextBtn = document.createElement("button");
   nextBtn.type = "button"; nextBtn.className = "next-btn";
-  nextBtn.textContent = winner ? "🏆 結果を見る" : "次の問題へ ▶";
-  nextBtn.addEventListener("click", function(){
-    if(winner) {
-      showResult(winner);
-    } else {
-      qIndex++;
-      if(mode === "online" && isHost) {
-        sendNetMessage({ type: "NEXT_QUESTION", curQ: deck[qIndex] });
+
+  if(mode === "online" && !isHost) {
+    // Guest waits for host to advance
+    nextBtn.textContent = winner ? "🏆 結果を待っています..." : "ホストの進行を待っています...";
+    nextBtn.disabled = true;
+    nextBtn.style.opacity = "0.7";
+    nextBtn.style.cursor = "default";
+  } else {
+    nextBtn.textContent = winner ? "🏆 結果を見る" : "次の問題へ ▶";
+    nextBtn.addEventListener("click", function(){
+      if(winner) {
+        if(mode === "online" && isHost) {
+          sendNetMessage({ type: "SHOW_RESULT", winner: winner, byDeck: false });
+        }
+        showResult(winner);
+      } else {
+        qIndex++;
+        if(mode === "online" && isHost) {
+          if(qIndex >= deck.length) {
+            if(poolSize > 1) {
+              deck = shuffle(pool); qIndex = 0;
+            } else {
+              var sorted = players.slice().sort(function(a,b){ return (b.score - a.score) || (a.crosses - b.crosses); });
+              sendNetMessage({ type: "SHOW_RESULT", winner: sorted[0], byDeck: true });
+              showResult(sorted[0], true);
+              return;
+            }
+          }
+          sendNetMessage({ type: "NEXT_QUESTION", curQ: deck[qIndex], qIndex: qIndex });
+        }
+        startQuestion();
       }
-      startQuestion();
-    }
-  });
+    });
+  }
   area.appendChild(nextBtn);
 }
 
@@ -2083,6 +2120,9 @@ function checkWinner() {
 }
 function finishByDeckEnd() {
   var sorted = players.slice().sort(function(a,b){ return (b.score - a.score) || (a.crosses - b.crosses); });
+  if(mode === "online" && isHost) {
+    sendNetMessage({ type: "SHOW_RESULT", winner: sorted[0], byDeck: true });
+  }
   showResult(sorted[0], true);
 }
 
@@ -2112,25 +2152,31 @@ function startPracticeQuestion() {
 
 function practiceAnswer(choiceIdx) {
   if(phase !== "practice") return;
-  phase = "practiceReveal";
   var correct = (choiceIdx === curQ.a);
-  if(correct) { practiceCorrect++; sndCorrect(); }
-  else {
+  if(correct) {
+    phase = "practiceReveal";
+    practiceCorrect++; sndCorrect();
+    for(var i=0; i<4; i++){
+      var b = $("choice" + i); if(!b) continue;
+      b.disabled = true;
+      if(i === curQ.a) b.classList.add("correct");
+      else b.classList.add("dim");
+    }
+    $("flash").textContent = "⭕ 正解！";
+    $("flash").className = "flash-bar ok";
+    showExplain(true, players[0]);
+  } else {
     sndWrong();
     addWrongQuestion(curQ);
+    var wrongBtn = $("choice" + choiceIdx);
+    if(wrongBtn) {
+      wrongBtn.classList.add("wrong");
+      wrongBtn.disabled = true;
+    }
+    $("flash").textContent = "❌ 不正解… もう一度選んでね！";
+    $("flash").className = "flash-bar ng";
+    $("qHint").textContent = "答えが合うまで挑戦！別の選択肢をタップしてください。";
   }
-
-  for(var i=0; i<4; i++){
-    var b = $("choice" + i); if(!b) continue;
-    b.disabled = true;
-    if(i === curQ.a) b.classList.add("correct");
-    else if(i === choiceIdx) b.classList.add("wrong");
-    else b.classList.add("dim");
-  }
-
-  $("flash").textContent = correct ? "⭕ 正解！" : "❌ 不正解…";
-  $("flash").className = "flash-bar " + (correct ? "ok" : "ng");
-  showExplain(correct, players[0]);
 }
 
 function showPracticeResult() {
@@ -2289,18 +2335,24 @@ function spawnFloatingEmote(em) {
 }
 
 /* Audio Controls */
-$("bgmToggleBtn").addEventListener("click", function(){
-  bgmOn = !bgmOn;
-  this.textContent = bgmOn ? "🎵 BGM" : "🔇 BGM";
-  this.classList.toggle("active", bgmOn);
-  if(bgmOn) { getAudioContext(); startBgm(); }
-  else stopBgm();
-});
-$("sfxToggleBtn").addEventListener("click", function(){
-  sfxOn = !sfxOn;
-  this.textContent = sfxOn ? "🔊 SE" : "🔇 SE";
-  this.classList.toggle("active", sfxOn);
-});
+var bgmBtn = $("bgmToggleBtn");
+if(bgmBtn) {
+  bgmBtn.addEventListener("click", function(){
+    bgmOn = !bgmOn;
+    this.textContent = bgmOn ? "🎵 BGM" : "🔇 BGM";
+    this.classList.toggle("active", bgmOn);
+    if(bgmOn) { getAudioContext(); startBgm(); }
+    else stopBgm();
+  });
+}
+var sfxBtn = $("sfxToggleBtn");
+if(sfxBtn) {
+  sfxBtn.addEventListener("click", function(){
+    sfxOn = !sfxOn;
+    this.textContent = sfxOn ? "🔊 SE" : "🔇 SE";
+    this.classList.toggle("active", sfxOn);
+  });
+}
 
 function clearAllTimers() {
   stopTyping(); stopAnswerTimer(); clearCPUTimers();
