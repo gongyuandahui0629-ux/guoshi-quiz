@@ -498,6 +498,29 @@
   .flash-bar { text-align: center; font-weight: 900; font-size: 16px; min-height: 24px; margin-top: 8px; }
   .flash-bar.ok { color: var(--neon-lime); text-shadow: var(--neon-lime-glow); }
   .flash-bar.ng { color: var(--neon-pink); text-shadow: var(--neon-pink-glow); }
+
+  /* Quick Match Animations */
+  @keyframes qmSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .qm-spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0, 240, 255, 0.2);
+    border-top-color: var(--neon-cyan);
+    border-radius: 50%;
+    animation: qmSpin 0.8s linear infinite;
+    display: inline-block;
+  }
+  @keyframes qmPulse {
+    0% { transform: scale(1); box-shadow: 0 0 12px rgba(0,240,255,0.4); }
+    50% { transform: scale(1.02); box-shadow: 0 0 24px rgba(0,240,255,0.85); }
+    100% { transform: scale(1); box-shadow: 0 0 12px rgba(0,240,255,0.4); }
+  }
+  .qm-pulse {
+    animation: qmPulse 2.2s infinite ease-in-out;
+  }
 </style>
 </head>
 <body>
@@ -605,36 +628,78 @@
       <!-- ONLINE SETUP -->
       <div class="setup-panel hidden" id="panelOnline">
         <h3>🌐 リアルタイムオンライン対戦</h3>
-        <div class="seg-row" id="onlineRoleRow">
-          <button type="button" data-role="host" class="seg-btn active">ルームを作る (ホスト)</button>
-          <button type="button" data-role="guest" class="seg-btn">参加する (ゲスト)</button>
+
+        <!-- Player Name Input -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;background:rgba(15,23,42,0.7);border:1px solid var(--border-neon);padding:10px 14px;border-radius:12px;">
+          <span style="font-size:13px;font-weight:700;color:var(--text-secondary);white-space:nowrap;">あなたの名前：</span>
+          <input class="cyber-input" id="onlinePlayerName" type="text" value="技師のたまご" maxlength="10" style="flex:1;margin:0;">
         </div>
 
-        <div id="hostArea">
-          <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:8px;">あなたの名前：</div>
-          <input class="cyber-input" id="onlineHostName" type="text" value="ホスト" maxlength="10" style="margin-bottom:10px;">
-          <div style="background:rgba(0,0,0,0.5);border:1px dashed var(--border-neon);padding:12px;border-radius:12px;text-align:center;">
-            <div style="font-size:11.5px;color:var(--text-dim);">あなたのルームID（数字4桁）</div>
-            <div id="hostRoomIdDisplay" style="font-family:'Orbitron',sans-serif;font-size:32px;letter-spacing:4px;font-weight:900;color:var(--neon-cyan);margin:6px 0;">????</div>
-            <button class="hud-btn" id="btnCopyInviteLink" type="button" style="width:100%;justify-content:center;margin-top:6px;">
-              🔗 招待リンクをコピー (LINEに貼る)
-            </button>
-            <div id="hostLobbyStatus" style="font-size:12px;font-weight:800;color:var(--neon-yellow);margin-top:8px;">
-              相手の接続を待っています...
+        <!-- FEATURE: RANDOM QUICK MATCH (野良マッチ) -->
+        <div style="background:linear-gradient(135deg, rgba(0,240,255,0.14), rgba(255,0,85,0.1));border:2px solid var(--neon-cyan);box-shadow:0 0 20px rgba(0,240,255,0.25);border-radius:16px;padding:16px;text-align:center;margin-bottom:16px;">
+          <div style="display:inline-block;background:var(--neon-cyan);color:#050811;font-weight:900;font-size:11px;letter-spacing:1px;padding:3px 12px;border-radius:20px;margin-bottom:8px;">
+            ⚡ おすすめ・URL不要！
+          </div>
+          <h4 style="margin:0 0 6px;font-size:18px;font-weight:900;color:#fff;letter-spacing:0.5px;">
+            ランダム対戦（野良マッチ）
+          </h4>
+          <p style="margin:0 0 14px;font-size:12.5px;color:var(--text-secondary);line-height:1.5;">
+            ボタンを1回押すだけで、今アクセスしている全国のプレイヤーと自動マッチングして即スタート！
+          </p>
+
+          <!-- Search button (Initial state) -->
+          <button class="hud-btn active qm-pulse" id="btnQuickMatch" type="button" style="width:100%;justify-content:center;padding:15px;font-size:16px;font-weight:900;background:linear-gradient(90deg, #00f0ff, #00b0ff);color:#050811;letter-spacing:0.5px;">
+            ⚡ 対戦相手を探す (自動マッチング)
+          </button>
+
+          <!-- Searching / Connecting state (Hidden initially) -->
+          <div id="qmSearchingBox" class="hidden" style="padding:12px 0;">
+            <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;">
+              <div class="qm-spinner"></div>
+              <div id="qmStatusText" style="font-size:14.5px;font-weight:800;color:var(--neon-yellow);">
+                🔍 対戦相手を検索中...
+              </div>
             </div>
+            <div id="qmSubStatus" style="font-size:12px;color:var(--text-dim);margin-bottom:14px;">
+              待機中のプレイヤーを確認しています...
+            </div>
+            <button class="hud-btn" id="btnCancelQuickMatch" type="button" style="padding:8px 22px;font-size:12.5px;border-color:var(--neon-pink);color:var(--neon-pink);background:rgba(255,0,85,0.1);">
+              ✕ 検索をキャンセル
+            </button>
           </div>
         </div>
 
-        <div id="guestArea" class="hidden">
-          <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:8px;">あなたの名前：</div>
-          <input class="cyber-input" id="onlineGuestName" type="text" value="ゲスト" maxlength="10" style="margin-bottom:10px;">
-          <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">合言葉・ルームID（数字4桁）：</div>
-          <input class="cyber-input" id="inputRoomId" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="例: 1234" style="font-size:18px;letter-spacing:2px;margin-bottom:10px;">
-          <button class="hud-btn active" id="btnConnectHost" type="button" style="width:100%;justify-content:center;padding:12px;">
-            ⚡ ルームへ参加
-          </button>
-          <div id="guestConnStatus" style="font-size:12px;font-weight:800;text-align:center;margin-top:8px;"></div>
-        </div>
+        <!-- FRIEND MATCH ACCORDION -->
+        <details id="detailsFriendMatch" style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:12px;font-size:13px;">
+          <summary style="cursor:pointer;user-select:none;color:var(--neon-cyan);font-weight:800;display:flex;align-items:center;gap:6px;">
+            <span>🔗 友達と専用URL・合言葉で対戦したい場合はこちら</span>
+          </summary>
+          <div style="padding-top:14px;">
+            <p style="margin:0 0 10px;font-size:12px;color:var(--text-secondary);line-height:1.4;">
+              特定の友達と遊ぶ時は、専用URLを送るか4桁の合言葉を伝えてください。
+            </p>
+            <div style="background:rgba(15,23,42,0.85);border:1px solid rgba(0,240,255,0.25);padding:12px;border-radius:10px;text-align:center;margin-bottom:12px;">
+              <div style="font-size:11px;color:var(--neon-cyan);font-weight:800;margin-bottom:4px;">
+                あなたの専用合言葉（4桁）: <span id="friendRoomCodeDisplay" style="font-size:18px;letter-spacing:2px;color:#fff;font-family:Orbitron,monospace;">----</span>
+              </div>
+              <button class="hud-btn active" id="btnCopyInviteLink" type="button" style="width:100%;justify-content:center;padding:11px;font-size:13px;font-weight:800;margin-top:6px;">
+                📤 友達に招待URLを送る (LINE/SNS)
+              </button>
+              <div id="friendHostStatus" style="font-size:11.5px;font-weight:700;color:var(--neon-yellow);margin-top:6px;">
+                合言葉を発行しています...
+              </div>
+            </div>
+
+            <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px;">友達の合言葉（4桁）を入力して参加：</div>
+            <div style="display:flex;gap:8px;">
+              <input class="cyber-input" id="inputRoomId" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="例: 1234" style="font-size:16px;letter-spacing:2px;flex:1;">
+              <button class="hud-btn" id="btnConnectHost" type="button" style="flex:none;padding:0 16px;font-weight:800;">
+                ⚡ 参加
+              </button>
+            </div>
+            <div id="guestConnStatus" style="font-size:11.5px;font-weight:800;margin-top:6px;"></div>
+          </div>
+        </details>
       </div>
 
       <!-- PRACTICE SETUP -->
@@ -1303,6 +1368,7 @@ modeCards.forEach(function(card){
     $("panelOnline").classList.toggle("hidden", mode !== "online");
     $("panelPractice").classList.toggle("hidden", mode !== "practice");
     $("panelReview").classList.toggle("hidden", mode !== "review");
+    if(mode !== "online" && typeof cleanupOnlineSession === "function") cleanupOnlineSession();
     getAudioContext(); playTone(880, 0.05, "sine", 0, 0.05);
   });
 });
@@ -1380,61 +1446,353 @@ function renderSubjectChips() {
 renderSubjectChips();
 
 /* ================= ONLINE WEBRTC ENGINE (PeerJS) ================= */
-function initPeerAsHost() {
-  if(peer) try{ peer.destroy(); }catch(e){}
-  var code4 = String(Math.floor(1000 + Math.random() * 9000));
-  var randomId = "radq-" + code4;
-  myPeerId = randomId;
-  $("hostRoomIdDisplay").textContent = code4;
-  $("hostLobbyStatus").textContent = "サーバーに接続中...";
-  $("hostLobbyStatus").style.color = "var(--neon-yellow)";
+var quickMatchActive = false;
+var quickMatchMatched = false;
+var quickMatchSlot = 1;
+var quickMatchMaxSlots = 5;
+var qmCandidatePeer = null;
+var qmTimeoutTimer = null;
+var qmCountdownTimer = null;
+var friendRoomCode = "";
+
+// Initialize player name from localStorage
+var savedPlayerName = localStorage.getItem("rad_player_name") || "技師のたまご";
+if($("onlinePlayerName")) {
+  $("onlinePlayerName").value = savedPlayerName;
+  $("onlinePlayerName").addEventListener("input", function(){
+    var val = this.value.trim();
+    if(val) localStorage.setItem("rad_player_name", val);
+  });
+}
+function getMyOnlineName(fallback) {
+  var el = $("onlinePlayerName");
+  var val = el ? el.value.trim() : "";
+  return val || fallback || "プレイヤー";
+}
+
+/* --- RANDOM QUICK MATCH (野良マッチ) --- */
+function startQuickMatch() {
+  getAudioContext();
+  cleanupOnlineSession();
+  quickMatchActive = true;
+  quickMatchMatched = false;
+  quickMatchSlot = 1;
+
+  if($("btnQuickMatch")) $("btnQuickMatch").classList.add("hidden");
+  if($("qmSearchingBox")) $("qmSearchingBox").classList.remove("hidden");
+  if($("qmStatusText")) {
+    $("qmStatusText").textContent = "🔍 対戦相手を検索中...";
+    $("qmStatusText").style.color = "var(--neon-yellow)";
+  }
+  if($("qmSubStatus")) $("qmSubStatus").textContent = "今すぐ遊べるプレイヤーを探しています...";
+
+  tryQuickMatchSlot(1);
+}
+
+function cancelQuickMatch() {
+  cleanupOnlineSession();
+  if($("btnQuickMatch")) $("btnQuickMatch").classList.remove("hidden");
+  if($("qmSearchingBox")) $("qmSearchingBox").classList.add("hidden");
+}
+
+function tryQuickMatchSlot(slot) {
+  if(!quickMatchActive) return;
+  if(slot > quickMatchMaxSlots) {
+    if($("qmSubStatus")) $("qmSubStatus").textContent = "全スロットを確認中... 再試行しています";
+    qmTimeoutTimer = setTimeout(function(){
+      if(quickMatchActive && !quickMatchMatched) tryQuickMatchSlot(1);
+    }, 1200);
+    return;
+  }
+
+  if($("qmStatusText")) {
+    $("qmStatusText").textContent = "🔍 対戦相手を検索中... (" + slot + "/" + quickMatchMaxSlots + ")";
+    $("qmStatusText").style.color = "var(--neon-yellow)";
+  }
+  if($("qmSubStatus")) $("qmSubStatus").textContent = "待機中のプレイヤーを確認しています...";
+
+  if(qmCandidatePeer) { try{ qmCandidatePeer.destroy(); }catch(e){} qmCandidatePeer = null; }
+
+  var slotId = "radqm-v1-slot-" + slot;
+  var candidate = new Peer(slotId);
+  qmCandidatePeer = candidate;
+  var slotHandled = false;
+
+  candidate.on("open", function(id){
+    if(!quickMatchActive || slotHandled) return;
+    slotHandled = true;
+    peer = candidate;
+    qmCandidatePeer = null;
+    isHost = true;
+
+    if($("qmStatusText")) {
+      $("qmStatusText").textContent = "⌛ 対戦相手を待っています... (スロット " + slot + ")";
+      $("qmStatusText").style.color = "var(--neon-cyan)";
+    }
+    if($("qmSubStatus")) $("qmSubStatus").textContent = "他のプレイヤーが「対戦を探す」を押すと自動で即スタート！";
+
+    peer.on("connection", function(c){
+      if(quickMatchMatched) {
+        c.on("open", function(){
+          try{ c.send({ type: "QM_BUSY" }); }catch(e){}
+          setTimeout(function(){ try{ c.close(); }catch(e){} }, 100);
+        });
+        return;
+      }
+      quickMatchMatched = true;
+      conn = c;
+      setupPeerConnection();
+      onQuickMatchConnectedAsHost();
+    });
+  });
+
+  candidate.on("error", function(err){
+    if(slotHandled) return;
+    slotHandled = true;
+    try{ candidate.destroy(); }catch(e){}
+    qmCandidatePeer = null;
+
+    if(err.type === "unavailable-id") {
+      // Slot is occupied, meaning someone is waiting! Connect to them as guest
+      connectAsGuestToSlot(slot);
+    } else {
+      setTimeout(function(){
+        if(quickMatchActive && !quickMatchMatched) tryQuickMatchSlot(slot + 1);
+      }, 300);
+    }
+  });
+}
+
+function connectAsGuestToSlot(slot) {
+  if(!quickMatchActive) return;
+  if($("qmStatusText")) {
+    $("qmStatusText").textContent = "⚡ 待機中のプレイヤーを発見！合流中...";
+    $("qmStatusText").style.color = "var(--neon-lime)";
+  }
+  if($("qmSubStatus")) $("qmSubStatus").textContent = "対戦準備を整えています...";
+
+  var guestId = "radqm-g-" + Math.floor(100000 + Math.random() * 900000);
+  var gPeer = new Peer(guestId);
+  qmCandidatePeer = gPeer;
+  var targetHostId = "radqm-v1-slot-" + slot;
+  var guestTimer = null;
+  var guestHandled = false;
+
+  gPeer.on("open", function(){
+    if(!quickMatchActive || guestHandled) { try{ gPeer.destroy(); }catch(e){} return; }
+
+    var c = gPeer.connect(targetHostId, { reliable: true });
+
+    guestTimer = setTimeout(function(){
+      if(!guestHandled && quickMatchActive && !quickMatchMatched) {
+        guestHandled = true;
+        try{ c.close(); }catch(e){}
+        try{ gPeer.destroy(); }catch(e){}
+        qmCandidatePeer = null;
+        tryQuickMatchSlot(slot + 1);
+      }
+    }, 2800);
+
+    c.on("open", function(){
+      if(guestHandled) return;
+      guestHandled = true;
+      if(guestTimer) clearTimeout(guestTimer);
+
+      peer = gPeer;
+      conn = c;
+      qmCandidatePeer = null;
+      isHost = false;
+
+      conn.on("data", function(data){
+        if(data && data.type === "QM_BUSY") {
+          quickMatchMatched = false;
+          try{ conn.close(); }catch(e){}
+          try{ peer.destroy(); }catch(e){}
+          conn = null; peer = null;
+          if(quickMatchActive) {
+            if($("qmStatusText")) $("qmStatusText").textContent = "スロット " + slot + " は対戦中でした。次を探します...";
+            tryQuickMatchSlot(slot + 1);
+          }
+          return;
+        }
+        handleNetMessage(data);
+      });
+
+      conn.on("close", function(){
+        onlineConnected = false;
+        alert("オンライン対戦が切断されました。");
+        showScreen("title");
+      });
+
+      quickMatchMatched = true;
+      onlineConnected = true;
+      onQuickMatchConnectedAsGuest();
+    });
+
+    c.on("error", function(){
+      if(guestHandled) return;
+      guestHandled = true;
+      if(guestTimer) clearTimeout(guestTimer);
+      try{ gPeer.destroy(); }catch(e){}
+      qmCandidatePeer = null;
+      if(quickMatchActive && !quickMatchMatched) tryQuickMatchSlot(slot + 1);
+    });
+  });
+
+  gPeer.on("error", function(){
+    if(guestHandled) return;
+    guestHandled = true;
+    if(guestTimer) clearTimeout(guestTimer);
+    try{ gPeer.destroy(); }catch(e){}
+    qmCandidatePeer = null;
+    if(quickMatchActive && !quickMatchMatched) tryQuickMatchSlot(slot + 1);
+  });
+}
+
+function onQuickMatchConnectedAsHost() {
+  onlineConnected = true;
+  var myName = getMyOnlineName("ホスト");
+  onlinePlayerNames.host = myName;
+
+  playTone(880, 0.1, "triangle", 0, 0.1);
+  setTimeout(function(){ playTone(1100, 0.15, "triangle", 0, 0.1); }, 120);
+
+  sendNetMessage({
+    type: "QM_GREETING",
+    hostName: myName,
+    selectedSubject: selectedSubject,
+    previewEnabled: previewEnabled
+  });
+
+  if($("qmStatusText")) {
+    $("qmStatusText").textContent = "🎉 対戦相手が見つかりました！";
+    $("qmStatusText").style.color = "var(--neon-lime)";
+  }
+
+  var count = 3;
+  if($("qmSubStatus")) $("qmSubStatus").textContent = count + "秒後に自動でバトルを開始します...";
+  if(qmCountdownTimer) clearInterval(qmCountdownTimer);
+  qmCountdownTimer = setInterval(function(){
+    count--;
+    if(count > 0) {
+      if($("qmSubStatus")) $("qmSubStatus").textContent = count + "秒後に自動でバトルを開始します...";
+      playTone(600, 0.05, "sine", 0, 0.05);
+    } else {
+      clearInterval(qmCountdownTimer);
+      qmCountdownTimer = null;
+      if($("qmSubStatus")) $("qmSubStatus").textContent = "バトル開始！";
+      getAudioContext();
+      if(bgmOn) startBgm();
+      startGame();
+    }
+  }, 1000);
+}
+
+function onQuickMatchConnectedAsGuest() {
+  var myName = getMyOnlineName("ゲスト");
+  onlinePlayerNames.guest = myName;
+
+  playTone(880, 0.1, "triangle", 0, 0.1);
+  setTimeout(function(){ playTone(1100, 0.15, "triangle", 0, 0.1); }, 120);
+
+  sendNetMessage({
+    type: "QM_JOIN",
+    guestName: myName
+  });
+
+  if($("qmStatusText")) {
+    $("qmStatusText").textContent = "🎉 対戦相手が見つかりました！";
+    $("qmStatusText").style.color = "var(--neon-lime)";
+  }
+  if($("qmSubStatus")) $("qmSubStatus").textContent = "ホストの開始を待っています...";
+}
+
+function cleanupOnlineSession() {
+  quickMatchActive = false;
+  quickMatchMatched = false;
+  if(qmTimeoutTimer) { clearTimeout(qmTimeoutTimer); qmTimeoutTimer = null; }
+  if(qmCountdownTimer) { clearInterval(qmCountdownTimer); qmCountdownTimer = null; }
+  if(qmCandidatePeer) { try{ qmCandidatePeer.destroy(); }catch(e){} qmCandidatePeer = null; }
+  if(conn) { try{ conn.close(); }catch(e){} conn = null; }
+  if(peer) { try{ peer.destroy(); }catch(e){} peer = null; }
+  onlineConnected = false;
+}
+
+/* --- FRIEND MATCH (合言葉 / URL) --- */
+function initFriendHost() {
+  if(quickMatchActive) return;
+  cleanupOnlineSession();
+  friendRoomCode = String(Math.floor(1000 + Math.random() * 9000));
+  var myPeerId = "radq-" + friendRoomCode;
+  isHost = true;
+
+  if($("friendRoomCodeDisplay")) $("friendRoomCodeDisplay").textContent = friendRoomCode;
+  if($("friendHostStatus")) {
+    $("friendHostStatus").textContent = "合言葉を発行中...";
+    $("friendHostStatus").style.color = "var(--neon-yellow)";
+  }
 
   peer = new Peer(myPeerId);
   peer.on("open", function(id){
-    $("hostLobbyStatus").textContent = "待機中：相手に「" + code4 + "」を伝えてください";
-    $("hostLobbyStatus").style.color = "var(--neon-cyan)";
+    if($("friendHostStatus")) {
+      $("friendHostStatus").textContent = "待機中：友達に「" + friendRoomCode + "」を伝えてください";
+      $("friendHostStatus").style.color = "var(--neon-cyan)";
+    }
   });
   peer.on("connection", function(c){
     conn = c;
     setupPeerConnection();
   });
   peer.on("error", function(err){
-    $("hostLobbyStatus").textContent = "接続エラー: " + err.type;
-    $("hostLobbyStatus").style.color = "var(--neon-pink)";
+    if($("friendHostStatus")) {
+      $("friendHostStatus").textContent = "接続待機中 (合言葉: " + friendRoomCode + ")";
+      $("friendHostStatus").style.color = "var(--neon-cyan)";
+    }
   });
 }
 
 function initPeerAsGuest(targetId, displayCode) {
-  if(peer) try{ peer.destroy(); }catch(e){}
+  cleanupOnlineSession();
   var tempId = "radguest-" + Math.floor(1000 + Math.random() * 9000);
-  $("guestConnStatus").textContent = "ルーム " + (displayCode || targetId) + " に接続試行中...";
-  $("guestConnStatus").style.color = "var(--neon-yellow)";
+  if($("guestConnStatus")) {
+    $("guestConnStatus").textContent = "ルーム " + (displayCode || targetId) + " に接続試行中...";
+    $("guestConnStatus").style.color = "var(--neon-yellow)";
+  }
 
   peer = new Peer(tempId);
+  isHost = false;
   peer.on("open", function(){
     conn = peer.connect(targetId);
     setupPeerConnection();
   });
   peer.on("error", function(err){
-    $("guestConnStatus").textContent = "接続失敗: 4桁の番号を確認してください";
-    $("guestConnStatus").style.color = "var(--neon-pink)";
+    if($("guestConnStatus")) {
+      $("guestConnStatus").textContent = "接続失敗: 4桁の合言葉を確認してください";
+      $("guestConnStatus").style.color = "var(--neon-pink)";
+    }
   });
 }
 
+/* --- WEBRTC CONNECTION LIFECYCLE & MESSAGES --- */
 function setupPeerConnection() {
   if(!conn) return;
   conn.on("open", function(){
     onlineConnected = true;
     sndCorrect();
+    var myName = getMyOnlineName(isHost ? "ホスト" : "ゲスト");
     if(isHost) {
-      onlinePlayerNames.host = $("onlineHostName").value.trim() || "ホスト";
-      $("hostLobbyStatus").textContent = "🎉 ゲストが参加しました！バトル開始を押してください";
-      $("hostLobbyStatus").style.color = "var(--neon-lime)";
+      onlinePlayerNames.host = myName;
+      if($("friendHostStatus")) {
+        $("friendHostStatus").textContent = "🎉 友達が参加しました！「バトル開始」を押してスタート";
+        $("friendHostStatus").style.color = "var(--neon-lime)";
+      }
       sendNetMessage({ type: "HELLO", hostName: onlinePlayerNames.host });
     } else {
-      onlinePlayerNames.guest = $("onlineGuestName").value.trim() || "ゲスト";
-      $("guestConnStatus").textContent = "✅ ルームに接続完了！ホストの開始を待っています...";
-      $("guestConnStatus").style.color = "var(--neon-lime)";
+      onlinePlayerNames.guest = myName;
+      if($("guestConnStatus")) {
+        $("guestConnStatus").textContent = "✅ ルームに接続完了！ホストの開始を待っています...";
+        $("guestConnStatus").style.color = "var(--neon-lime)";
+      }
       sendNetMessage({ type: "GUEST_JOIN", guestName: onlinePlayerNames.guest });
     }
   });
@@ -1462,9 +1820,29 @@ function handleNetMessage(msg) {
       break;
     case "GUEST_JOIN":
       onlinePlayerNames.guest = msg.guestName || "ゲスト";
-      $("hostLobbyStatus").textContent = "🎉 " + onlinePlayerNames.guest + " が参加！「バトル開始」を押してスタート";
+      if($("friendHostStatus")) {
+        $("friendHostStatus").textContent = "🎉 " + onlinePlayerNames.guest + " が参加！「バトル開始」を押してスタート";
+      }
+      break;
+    case "QM_GREETING":
+      onlinePlayerNames.host = msg.hostName || "ホスト";
+      if(msg.selectedSubject) selectedSubject = msg.selectedSubject;
+      if(msg.previewEnabled !== undefined) previewEnabled = msg.previewEnabled;
+      if($("qmStatusText")) {
+        $("qmStatusText").textContent = "🎉 対戦相手（" + onlinePlayerNames.host + "）とマッチ！";
+        $("qmStatusText").style.color = "var(--neon-lime)";
+      }
+      if($("qmSubStatus")) $("qmSubStatus").textContent = "ホストの開始を待っています...";
+      break;
+    case "QM_JOIN":
+      onlinePlayerNames.guest = msg.guestName || "ゲスト";
+      if($("qmStatusText")) {
+        $("qmStatusText").textContent = "🎉 対戦相手（" + onlinePlayerNames.guest + "）とマッチ！";
+        $("qmStatusText").style.color = "var(--neon-lime)";
+      }
       break;
     case "START_GAME":
+      if(bgmOn) startBgm();
       players = msg.players;
       deck = msg.deck;
       previewEnabled = msg.previewEnabled;
@@ -1504,39 +1882,51 @@ function handleNetMessage(msg) {
   }
 }
 
-/* Online Role selection */
-document.querySelectorAll("#onlineRoleRow button").forEach(function(b){
-  b.addEventListener("click", function(){
-    document.querySelectorAll("#onlineRoleRow button").forEach(function(x){ x.classList.remove("active"); });
-    b.classList.add("active");
-    var role = b.getAttribute("data-role");
-    isHost = (role === "host");
-    $("hostArea").classList.toggle("hidden", !isHost);
-    $("guestArea").classList.toggle("hidden", isHost);
-    if(isHost) initPeerAsHost();
+/* Event listeners for buttons */
+if($("btnQuickMatch")) {
+  $("btnQuickMatch").addEventListener("click", function(){
+    startQuickMatch();
   });
-});
+}
 
-$("btnConnectHost").addEventListener("click", function(){
-  var raw = $("inputRoomId").value.trim();
-  if(!raw) { alert("4桁のルームIDを入力してください"); return; }
-  var digits = raw.replace(/[^0-9]/g, "");
-  var id = digits ? ("radq-" + digits) : raw;
-  targetPeerId = id;
-  initPeerAsGuest(id, digits || raw);
-});
+if($("btnCancelQuickMatch")) {
+  $("btnCancelQuickMatch").addEventListener("click", function(){
+    cancelQuickMatch();
+  });
+}
 
-$("btnCopyInviteLink").addEventListener("click", function(){
-  var code = myPeerId.replace("radq-","");
-  var url = location.protocol + "//" + location.host + location.pathname + "?room=" + code;
-  if(navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url).then(function(){
-      alert("招待URL（ルームID: " + code + "）をコピーしました！LINEやDiscordに貼り付けて友達に送ってください。");
-    });
-  } else {
-    prompt("以下のURLをコピーして送ってください：", url);
-  }
-});
+if($("detailsFriendMatch")) {
+  $("detailsFriendMatch").addEventListener("toggle", function(){
+    if(this.open && !friendRoomCode && !quickMatchActive) {
+      initFriendHost();
+    }
+  });
+}
+
+if($("btnConnectHost")) {
+  $("btnConnectHost").addEventListener("click", function(){
+    var raw = $("inputRoomId") ? $("inputRoomId").value.trim() : "";
+    if(!raw) { alert("4桁の合言葉を入力してください"); return; }
+    var digits = raw.replace(/[^0-9]/g, "");
+    var id = digits ? ("radq-" + digits) : raw;
+    initPeerAsGuest(id, digits || raw);
+  });
+}
+
+if($("btnCopyInviteLink")) {
+  $("btnCopyInviteLink").addEventListener("click", function(){
+    if(!friendRoomCode) initFriendHost();
+    var code = friendRoomCode;
+    var url = location.protocol + "//" + location.host + location.pathname + "?room=" + code;
+    if(navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(function(){
+        alert("友達用招待URL（合言葉: " + code + "）をコピーしました！LINEやSNSに貼り付けて友達に送ってください。");
+      });
+    } else {
+      prompt("以下のURLをコピーして送ってください：", url);
+    }
+  });
+}
 
 /* Check URL for auto-join */
 window.addEventListener("DOMContentLoaded", function(){
@@ -1544,10 +1934,13 @@ window.addEventListener("DOMContentLoaded", function(){
   var room = params.get("room");
   if(room) {
     var digits = room.replace(/[^0-9]/g, "");
-    document.querySelector('.mode-card[data-mode="online"]').click();
-    document.querySelector('#onlineRoleRow button[data-role="guest"]').click();
-    $("inputRoomId").value = digits || room;
-    setTimeout(function(){ $("btnConnectHost").click(); }, 300);
+    var onlineCard = document.querySelector('.mode-card[data-mode="online"]');
+    if(onlineCard) onlineCard.click();
+    if($("detailsFriendMatch")) $("detailsFriendMatch").open = true;
+    if($("inputRoomId")) $("inputRoomId").value = digits || room;
+    setTimeout(function(){
+      if($("btnConnectHost")) $("btnConnectHost").click();
+    }, 400);
   }
 });
 
@@ -2274,7 +2667,7 @@ $("copyResultBtn").addEventListener("click", function(){
   }
 });
 $("btnPlayAgain").addEventListener("click", function(){ getAudioContext(); startGame(); });
-$("btnBackHome").addEventListener("click", function(){ clearAllTimers(); phase = "idle"; showScreen("title"); });
+$("btnBackHome").addEventListener("click", function(){ clearAllTimers(); phase = "idle"; cleanupOnlineSession(); showScreen("title"); });
 
 /* ================= MODAL HANDLERS (Feature 4 & 6) ================= */
 function openZoomModal(title, svg) {
